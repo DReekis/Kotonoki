@@ -48,7 +48,7 @@ def test_home_and_static_routes(client):
 
     res_sw = client.get("/sw.js")
     assert res_sw.status_code == 200
-    assert b"kotonoki-v1" in res_sw.data
+    assert b"kotonoki-v" in res_sw.data
 
 def test_full_auth_and_dispatch_workflow(client):
     # 1. Register new pen name

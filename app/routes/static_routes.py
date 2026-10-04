@@ -49,7 +49,7 @@ def pwa_manifest():
 @static_bp.route("/sw.js", methods=["GET"])
 def service_worker():
     sw_code = """
-const CACHE_NAME = 'kotonoki-v1';
+const CACHE_NAME = 'kotonoki-v3';
 const STATIC_ASSETS = [
   '/',
   '/static/css/tokens.css',

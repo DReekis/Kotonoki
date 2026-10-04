@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kotonoki-v2';
+const CACHE_NAME = 'kotonoki-v3';
 const STATIC_ASSETS = [
   '/',
   '/static/css/tokens.css',
