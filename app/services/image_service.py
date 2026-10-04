@@ -66,7 +66,37 @@ class ImageService:
                 clean_img.paste(img.convert("RGB"), (0, 0))
 
             # Generate unique filename using UUIDv7
-            unique_name = f"{generate_uuid7()}.webp"
+            unique_id = generate_uuid7()
+            unique_name = f"{unique_id}.webp"
+
+            # If Cloudinary is configured (recommended for persistent Vercel storage)
+            if os.environ.get("CLOUDINARY_URL"):
+                try:
+                    import io
+                    import cloudinary
+                    import cloudinary.uploader
+
+                    buffer = io.BytesIO()
+                    clean_img.save(
+                        buffer,
+                        format="WEBP",
+                        quality=current_app.config.get("IMAGE_QUALITY", 82),
+                        method=4
+                    )
+                    buffer.seek(0)
+
+                    upload_result = cloudinary.uploader.upload(
+                        buffer,
+                        folder="kotonoki",
+                        public_id=unique_id,
+                        resource_type="image",
+                        format="webp"
+                    )
+                    return upload_result.get("secure_url"), None
+                except Exception as c_err:
+                    current_app.logger.warning(f"Cloudinary upload failed, falling back to local: {c_err}")
+
+            # Local or /tmp storage fallback
             destination = cls.get_upload_dir() / unique_name
 
             # Encode as WebP with stripped metadata
@@ -88,9 +118,24 @@ class ImageService:
     @classmethod
     def delete_image_file(cls, image_path: Optional[str]) -> bool:
         """
-        Permanently remove the image file from disk when a dispatch is Struck.
+        Permanently remove the image file from disk or Cloudinary when a dispatch is Struck.
         """
         if not image_path:
+            return True
+
+        # Handle Cloudinary remote image deletion
+        if image_path.startswith("http://") or image_path.startswith("https://"):
+            if "cloudinary.com" in image_path and os.environ.get("CLOUDINARY_URL"):
+                try:
+                    import cloudinary
+                    import cloudinary.uploader
+                    filename = Path(image_path).stem
+                    public_id = f"kotonoki/{filename}"
+                    cloudinary.uploader.destroy(public_id)
+                    return True
+                except Exception as e:
+                    current_app.logger.warning(f"Failed to delete Cloudinary image {image_path}: {e}")
+                    return False
             return True
 
         try:
