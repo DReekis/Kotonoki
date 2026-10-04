@@ -9,7 +9,7 @@
       hx-swap="outerHTML"
       title="Upvote"
       aria-label="Upvote this dispatch">
-      <svg class="vote-chevron-svg" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg class="vote-chevron-svg" viewBox="0 0 10 10" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:10px; height:10px; flex-shrink:0;">
         <path d="M2 6.5L5 3.5L8 6.5"/>
       </svg>
       <span class="vote-count">{{ dispatch.upvotes_count }}</span>
@@ -24,21 +24,21 @@
       hx-swap="outerHTML"
       title="Downvote"
       aria-label="Downvote this dispatch">
-      <svg class="vote-chevron-svg" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg class="vote-chevron-svg" viewBox="0 0 10 10" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:10px; height:10px; flex-shrink:0;">
         <path d="M2 3.5L5 6.5L8 3.5"/>
       </svg>
       <span class="vote-count">{{ dispatch.downvotes_count }}</span>
     </button>
   {% else %}
     <a href="/auth?tab=login&next={{ request.path }}" class="vote-btn" title="Log in to vote" aria-label="Log in to upvote">
-      <svg class="vote-chevron-svg" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg class="vote-chevron-svg" viewBox="0 0 10 10" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:10px; height:10px; flex-shrink:0;">
         <path d="M2 6.5L5 3.5L8 6.5"/>
       </svg>
       <span class="vote-count">{{ dispatch.upvotes_count }}</span>
     </a>
     <div class="vote-divider"></div>
     <a href="/auth?tab=login&next={{ request.path }}" class="vote-btn" title="Log in to vote" aria-label="Log in to downvote">
-      <svg class="vote-chevron-svg" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg class="vote-chevron-svg" viewBox="0 0 10 10" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:10px; height:10px; flex-shrink:0;">
         <path d="M2 3.5L5 6.5L8 3.5"/>
       </svg>
       <span class="vote-count">{{ dispatch.downvotes_count }}</span>

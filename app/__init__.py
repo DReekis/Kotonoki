@@ -9,7 +9,13 @@ from app.utils.auth_decorators import get_current_pen_name
 from app.services.sanitizer_service import SanitizerService
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    # Locate static folder: prefer public/static (Vercel CDN source) with app/static fallback
+    root_dir = Path(__file__).resolve().parent.parent
+    public_static = root_dir / "public" / "static"
+    app_static = Path(__file__).resolve().parent / "static"
+    static_folder = str(public_static) if public_static.exists() else str(app_static)
+
+    app = Flask(__name__, static_folder=static_folder)
     app.config.from_object(config_class)
 
     # Ensure upload directory exists (tolerant of read-only serverless environments)
@@ -38,7 +44,7 @@ def create_app(config_class=Config):
             "csrf_field": csrf_field,
             "current_user": get_current_pen_name(),
             "now_utc": datetime.now(timezone.utc),
-            "asset_version": "2.2"
+            "asset_version": "2.3"
         }
 
     # Template filters
@@ -102,9 +108,7 @@ def create_app(config_class=Config):
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         if request.path.startswith("/static"):
-            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-            response.headers["Pragma"] = "no-cache"
-            response.headers["Expires"] = "0"
+            response.headers["Cache-Control"] = "public, max-age=86400, stale-while-revalidate=604800"
         return response
 
     # Custom Error Handlers
@@ -118,6 +122,8 @@ def create_app(config_class=Config):
 
     @app.errorhandler(404)
     def not_found_error(e):
+        if request.path.startswith("/static/"):
+            return "File not found", 404, {"Content-Type": "text/plain"}
         return render_template("errors/error.html", code=404, title="Not Found", message="The requested dispatch, branch, or resource does not exist."), 404
 
     @app.errorhandler(429)

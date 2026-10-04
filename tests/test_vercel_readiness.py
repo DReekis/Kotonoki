@@ -52,3 +52,41 @@ def test_vercel_environment_simulation(monkeypatch):
     importlib.reload(app.config)
     Config = app.config.Config
     assert Config.SQLALCHEMY_DATABASE_URI.startswith("postgresql://")
+
+def test_vercel_static_assets_present():
+    """Ensure public/ directory contains all critical static assets for direct CDN delivery on Vercel."""
+    public_dir = Path("public")
+    assert public_dir.exists(), "public/ folder must exist in repository root for Vercel CDN static delivery"
+    
+    required_assets = [
+        "public/static/css/tokens.css",
+        "public/static/css/explorer.css",
+        "public/static/css/sticky.css",
+        "public/static/css/print.css",
+        "public/static/js/app.js",
+        "public/static/js/htmx.min.js",
+        "public/static/icons/icon-192.png",
+        "public/manifest.json",
+        "public/sw.js"
+    ]
+    for asset in required_assets:
+        p = Path(asset)
+        assert p.exists(), f"Required static asset missing: {asset}"
+        assert p.stat().st_size > 0, f"Static asset is empty: {asset}"
+
+def test_static_mime_types_and_delivery():
+    """Verify that static assets serve with proper text/css and javascript MIME types."""
+    from api.index import app
+    with app.test_client() as client:
+        r_css = client.get("/static/css/explorer.css")
+        assert r_css.status_code == 200
+        assert "text/css" in r_css.headers.get("Content-Type", "")
+        
+        r_tokens = client.get("/static/css/tokens.css")
+        assert r_tokens.status_code == 200
+        assert "text/css" in r_tokens.headers.get("Content-Type", "")
+        
+        r_js = client.get("/static/js/app.js")
+        assert r_js.status_code == 200
+        assert any(t in r_js.headers.get("Content-Type", "") for t in ["javascript", "text/plain"])
+
