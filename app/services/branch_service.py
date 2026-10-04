@@ -15,6 +15,7 @@ RESERVED_SLUGS = {
     "static",
     "desk",
     "branch",
+    "branches",
     "dispatch",
     "uploads",
     "health",
@@ -87,3 +88,23 @@ class BranchService:
         return db.session.execute(
             db.select(Branch).order_by(Branch.slug.asc()).limit(limit)
         ).scalars().all()
+
+    @classmethod
+    def get_branches_with_counts(cls) -> List[dict]:
+        """
+        Return all branches along with their dispatch count for the Branches screen.
+        """
+        branches = db.session.execute(
+            db.select(Branch).order_by(Branch.slug.asc())
+        ).scalars().all()
+
+        results = []
+        for b in branches:
+            count = db.session.execute(
+                db.select(db.func.count(db.text("1"))).select_from(db.text("dispatches")).where(db.text("branch_id = :bid")).params(bid=b.id)
+            ).scalar() or 0
+            results.append({
+                "branch": b,
+                "count": count
+            })
+        return results

@@ -25,78 +25,124 @@
   <script src="/static/js/app.js" defer></script>
   {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
   <div class="app-window">
-    <!-- Top Explorer Address / Breadcrumb Bar -->
-    <header class="explorer-top-bar">
-      <a href="/" class="brand-section" title="Kotonoki (言の木) — Home">
-        <div class="brand-icon">言</div>
-        <div>
-          <span class="brand-title">Kotonoki</span>
-          <span class="brand-sub">言の木</span>
-        </div>
-      </a>
-
-      <!-- Address Path -->
-      <nav class="address-bar" aria-label="Breadcrumb">
-        <div class="crumb-segment">
-          <a href="/">Kotonoki</a>
-          <span class="crumb-separator">▸</span>
-        </div>
-        <div class="crumb-segment">
-          <a href="/">Branches</a>
-          <span class="crumb-separator">▸</span>
-        </div>
-        <div class="crumb-segment crumb-current">
-          {% block breadcrumb %}/all{% endblock %}
-        </div>
-      </nav>
-
-      <!-- Identity Strip -->
-      <div class="user-identity-strip">
-        {% if current_user %}
-          <a href="/desk" class="cmd-btn" title="Open My Desk">
-            <span style="color:#2b579a;">●</span> {{ current_user.handle }}
-          </a>
-        {% else %}
-          <a href="/auth" class="cmd-btn" title="Claim Pen Name or Log In">
-            Pen Name
-          </a>
-        {% endif %}
-      </div>
-    </header>
-
-    <!-- Command Bar (Toolbar) -->
-    <div class="command-bar">
-      <div class="command-group">
-        <button id="nav-toggle-btn" class="cmd-btn nav-toggle-btn" aria-label="Toggle branches navigation">
-          📁 Branches
-        </button>
-
-        <a href="/write" class="cmd-btn cmd-btn-primary" title="Compose a new dispatch">
-          ✍ New Dispatch
+    
+    <!-- ======================================================== -->
+    <!-- DESKTOP & TABLET CHROME (Hidden on Mobile < 768px)       -->
+    <!-- ======================================================== -->
+    <div class="desktop-chrome">
+      <!-- Top Explorer Address / Breadcrumb Bar -->
+      <header class="explorer-top-bar">
+        <a href="/" class="brand-section" title="Kotonoki (言の木) — Home">
+          <div class="brand-icon">言</div>
+          <div class="brand-text-block">
+            <span class="brand-title">Kotonoki</span>
+            <span class="brand-sub">言の木</span>
+          </div>
         </a>
 
-        <a href="/" class="cmd-btn" title="View all dispatches chronologically">
-          All Dispatches
-        </a>
-      </div>
+        <!-- Explorer Address Bar -->
+        <nav class="address-bar" aria-label="Breadcrumb">
+          <div class="crumb-segment">
+            <a href="/">Kotonoki</a>
+            <span class="crumb-separator">▸</span>
+          </div>
+          <div class="crumb-segment">
+            <a href="/branches">Branches</a>
+            <span class="crumb-separator">▸</span>
+          </div>
+          <div class="crumb-segment crumb-current">
+            {% block breadcrumb %}/all{% endblock %}
+          </div>
+        </nav>
 
-      <div class="command-group">
-        {% if current_user %}
-          <a href="/desk" class="cmd-btn">My Desk</a>
-          <form action="/auth/logout" method="POST" style="display:inline;">
-            {{ csrf_field() | safe }}
-            <button type="submit" class="cmd-btn" style="color:var(--k-text-muted);">Sign Out</button>
-          </form>
-        {% else %}
-          <a href="/auth?tab=register" class="cmd-btn">Claim Pen Name</a>
-          <a href="/auth?tab=login" class="cmd-btn">Log In</a>
-        {% endif %}
-        <a href="/about" class="cmd-btn" style="color:var(--k-text-muted);">About</a>
-        <a href="/rules" class="cmd-btn" style="color:var(--k-text-muted);">Rules</a>
+        <!-- Identity Strip -->
+        <div class="user-identity-strip">
+          {% if current_user %}
+            <a href="/desk" class="cmd-btn desk-indicator-btn" title="Open My Desk">
+              <span class="status-dot">●</span>
+              <span class="identity-name">{{ current_user.handle }}</span>
+            </a>
+          {% else %}
+            <a href="/auth" class="cmd-btn" title="Claim Pen Name or Log In">
+              Pen Name
+            </a>
+          {% endif %}
+        </div>
+      </header>
+
+      <!-- Command Bar (Toolbar) -->
+      <div class="command-bar">
+        <div class="command-group">
+          <button id="nav-toggle-btn" class="cmd-btn nav-toggle-btn" aria-label="Toggle branches navigation">
+            📁 Branches
+          </button>
+
+          <a href="/write" class="cmd-btn cmd-btn-primary" title="Compose a new dispatch">
+            ✍ New Dispatch
+          </a>
+
+          <a href="/" class="cmd-btn {% if request.path == '/' %}cmd-btn-active{% endif %}" title="View all dispatches chronologically">
+            All Dispatches
+          </a>
+
+          <a href="/branches" class="cmd-btn {% if request.path == '/branches' %}cmd-btn-active{% endif %}" title="Browse all public branches">
+            Browse Branches
+          </a>
+        </div>
+
+        <div class="command-group cmd-secondary-group">
+          {% if current_user %}
+            <a href="/desk" class="cmd-btn {% if request.path == '/desk' %}cmd-btn-active{% endif %}">My Desk</a>
+            <form action="/auth/logout" method="POST" style="display:inline;">
+              {{ csrf_field() | safe }}
+              <button type="submit" class="cmd-btn cmd-btn-quiet">Sign Out</button>
+            </form>
+          {% else %}
+            <a href="/auth?tab=register" class="cmd-btn">Claim Pen Name</a>
+            <a href="/auth?tab=login" class="cmd-btn">Log In</a>
+          {% endif %}
+          <a href="/about" class="cmd-btn cmd-btn-quiet">About</a>
+          <a href="/rules" class="cmd-btn cmd-btn-quiet">Rules</a>
+        </div>
       </div>
     </div>
+
+    <!-- ======================================================== -->
+    <!-- DEDICATED MOBILE HEADER (Visible ONLY on Mobile < 768px)  -->
+    <!-- ======================================================== -->
+    <header class="mobile-header" aria-label="Mobile Navigation Header">
+      <div class="mobile-header-left">
+        {% block mobile_header_left %}
+          <a href="/" class="mobile-brand-link">
+            <span class="brand-icon">言</span>
+            <span class="mobile-brand-title">Kotonoki</span>
+          </a>
+        {% endblock %}
+      </div>
+
+      <div class="mobile-header-center">
+        {% block mobile_header_center %}
+          <span class="mobile-context-pill">
+            {% if current_branch %}/{{ current_branch.slug }}{% else %}All Dispatches{% endif %}
+          </span>
+        {% endblock %}
+      </div>
+
+      <div class="mobile-header-right">
+        {% block mobile_header_right %}
+          {% if current_user %}
+            <a href="/desk" class="mobile-user-badge" title="My Desk">
+              <span class="status-dot">●</span>
+              <span>{{ current_user.handle }}</span>
+            </a>
+          {% else %}
+            <a href="/auth" class="mobile-auth-link">Log In</a>
+          {% endif %}
+        {% endblock %}
+      </div>
+    </header>
 
     <!-- Flash Messages Container -->
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -111,48 +157,101 @@
       {% endif %}
     {% endwith %}
 
-    <!-- Main Workspace Layout -->
+    <!-- ======================================================== -->
+    <!-- WORKSPACE LAYOUT BODY (Desktop/Tablet/Mobile Adaptive)   -->
+    <!-- ======================================================== -->
     <div class="layout-body">
-      <!-- Mobile Backdrop -->
+      <!-- Mobile / Tablet Drawer Backdrop -->
       <div id="nav-backdrop" class="nav-backdrop"></div>
 
-      <!-- Navigation Pane (Folders / Branches) -->
+      <!-- Navigation Pane (Desktop Sidebar & Tablet Drawer) -->
       <aside id="navigation-pane" class="navigation-pane" aria-label="Branches Navigation">
-        <div>
+        <div class="nav-pane-header">
           <div class="nav-section-title">Branches</div>
-          <ul class="branch-tree">
+          <button id="nav-close-btn" class="nav-close-btn" aria-label="Close navigation drawer">✕</button>
+        </div>
+
+        <ul class="branch-tree">
+          <li>
+            <a href="/" class="branch-item-link {% if request.path == '/' %}active{% endif %}">
+              <svg class="branch-folder-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+              </svg>
+              <span>/all</span>
+            </a>
+          </li>
+          {% for b in branches %}
             <li>
-              <a href="/" class="branch-item-link {% if not current_branch %}active{% endif %}">
+              <a href="/{{ b.slug }}" class="branch-item-link {% if current_branch and current_branch.slug == b.slug %}active{% endif %}">
                 <svg class="branch-folder-icon" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
                 </svg>
-                <span>/all</span>
+                <span>/{{ b.slug }}</span>
               </a>
             </li>
-            {% for b in branches %}
-              <li>
-                <a href="/{{ b.slug }}" class="branch-item-link {% if current_branch and current_branch.slug == b.slug %}active{% endif %}">
-                  <svg class="branch-folder-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
-                  </svg>
-                  <span>/{{ b.slug }}</span>
-                </a>
-              </li>
-            {% endfor %}
-          </ul>
-        </div>
+          {% endfor %}
+          <li>
+            <a href="/branches" class="branch-item-link branch-more-link {% if request.path == '/branches' %}active{% endif %}">
+              <span>➔ View all branches</span>
+            </a>
+          </li>
+        </ul>
 
-        <div style="margin-top:auto; padding: 12px 8px; border-top: 1px solid #e2edf6; font-size:11.5px; color:var(--k-text-muted);">
-          <div>Kotonoki (言の木)</div>
-          <div style="margin-top:2px;">Chronological Public Journal</div>
+        <div class="nav-pane-footer">
+          <div class="nav-footer-brand">Kotonoki (言の木)</div>
+          <div class="nav-footer-sub">Chronological Public Journal</div>
+          <div class="nav-footer-links">
+            <a href="/about">About</a> · <a href="/rules">Rules</a>
+          </div>
         </div>
       </aside>
 
       <!-- Main Content Area -->
       <main id="content-area" class="content-area">
-        {% block content %}{% endblock %}
+        <div class="content-reading-column">
+          {% block content %}{% endblock %}
+        </div>
       </main>
     </div>
+
+    <!-- ======================================================== -->
+    <!-- DEDICATED MOBILE BOTTOM NAVIGATION BAR (< 768px)         -->
+    <!-- ======================================================== -->
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+      <a href="/" class="mobile-nav-item {% if request.path == '/' or (current_branch and request.path == '/' ~ current_branch.slug) %}active{% endif %}" title="Home Feed">
+        <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span class="mobile-nav-label">Feed</span>
+      </a>
+
+      <a href="/branches" class="mobile-nav-item {% if request.path == '/branches' %}active{% endif %}" title="Public Branches">
+        <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span class="mobile-nav-label">Branches</span>
+      </a>
+
+      <a href="/write" class="mobile-nav-item mobile-nav-write-item {% if request.path == '/write' %}active{% endif %}" title="Write Dispatch">
+        <div class="mobile-write-pill">
+          <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+        <span class="mobile-nav-label">Write</span>
+      </a>
+
+      <a href="{% if current_user %}/desk{% else %}/auth{% endif %}" class="mobile-nav-item {% if request.path in ['/desk', '/auth'] %}active{% endif %}" title="My Desk / Account">
+        <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span class="mobile-nav-label">{% if current_user %}My Desk{% else %}Login{% endif %}</span>
+      </a>
+    </nav>
+
   </div>
 
   <!-- Sticky Desk Modal Container -->

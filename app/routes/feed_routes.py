@@ -43,6 +43,23 @@ def all_dispatches():
         feed_url=url_for("feed.all_dispatches")
     )
 
+@feed_bp.route("/branches", methods=["GET"])
+def branches_list():
+    branches = BranchService.get_popular_branches(limit=30)
+    branches_with_counts = BranchService.get_branches_with_counts()
+    total_dispatches = db.session.execute(
+        db.select(db.func.count(Dispatch.id))
+    ).scalar() or 0
+
+    return render_template(
+        "branches.html",
+        branches=branches,
+        branches_with_counts=branches_with_counts,
+        total_dispatches=total_dispatches,
+        current_branch=None,
+        active_nav="branches"
+    )
+
 @feed_bp.route("/<string:branch_slug>", methods=["GET"])
 def branch_feed(branch_slug: str):
     slug = branch_slug.lower()

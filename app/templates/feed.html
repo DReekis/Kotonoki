@@ -1,14 +1,35 @@
 {% extends "base.html" %}
 
 {% block title %}
-  {% if current_branch %}/{{ current_branch.slug }} — Kotonoki{% else %}All Dispatches — Kotonoki{% endif %}
+  {% if current_branch %}/{{ current_branch.slug }} — Kotonoki (言の木){% else %}All Dispatches — Kotonoki (言の木){% endif %}
 {% endblock %}
 
 {% block breadcrumb %}
   {% if current_branch %}/{{ current_branch.slug }}{% else %}/all{% endif %}
 {% endblock %}
 
+{% block mobile_header_center %}
+  <span class="mobile-context-pill">
+    {% if current_branch %}/{{ current_branch.slug }}{% else %}All Dispatches{% endif %}
+  </span>
+{% endblock %}
+
 {% block content %}
+  <!-- Mobile Horizontal Branch Filter Chips -->
+  <div class="mobile-branch-chips-scroller" aria-label="Branch filters">
+    <a href="/" class="mobile-branch-chip {% if not current_branch %}active{% endif %}">
+      /all
+    </a>
+    {% for b in branches %}
+      <a href="/{{ b.slug }}" class="mobile-branch-chip {% if current_branch and current_branch.slug == b.slug %}active{% endif %}">
+        /{{ b.slug }}
+      </a>
+    {% endfor %}
+    <a href="/branches" class="mobile-branch-chip mobile-chip-all">
+      ➔ all branches
+    </a>
+  </div>
+
   <div class="feed-header">
     <div>
       <h1 class="feed-header-title">
@@ -19,7 +40,7 @@
       </div>
     </div>
 
-    <div>
+    <div class="desktop-only-block">
       <a href="/write{% if current_branch %}?branch={{ current_branch.slug }}{% endif %}" class="cmd-btn cmd-btn-primary">
         + Write Here
       </a>
@@ -43,7 +64,7 @@
       <p class="empty-feed-desc">
         Kotonoki is a quiet public journal where branches belong to everyone. Be the first to leave a dispatch.
       </p>
-      <div style="margin-top:8px;">
+      <div style="margin-top:10px;">
         <a href="/write{% if current_branch %}?branch={{ current_branch.slug }}{% endif %}" class="cmd-btn cmd-btn-primary">
           ✍ Write First Dispatch
         </a>

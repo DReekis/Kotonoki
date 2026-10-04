@@ -8,8 +8,9 @@
       hx-target="#vote-widget-{{ dispatch.id }}"
       hx-swap="outerHTML"
       title="Upvote"
-      aria-label="Upvote">
-      ▲ {{ dispatch.upvotes_count }}
+      aria-label="Upvote this dispatch">
+      <span class="vote-arrow">▲</span>
+      <span class="vote-count">{{ dispatch.upvotes_count }}</span>
     </button>
     <div class="vote-divider"></div>
     <button 
@@ -20,16 +21,19 @@
       hx-target="#vote-widget-{{ dispatch.id }}"
       hx-swap="outerHTML"
       title="Downvote"
-      aria-label="Downvote">
-      ▼ {{ dispatch.downvotes_count }}
+      aria-label="Downvote this dispatch">
+      <span class="vote-arrow">▼</span>
+      <span class="vote-count">{{ dispatch.downvotes_count }}</span>
     </button>
   {% else %}
-    <a href="/auth?tab=login&next={{ request.path }}" class="vote-btn" title="Log in to vote">
-      ▲ {{ dispatch.upvotes_count }}
+    <a href="/auth?tab=login&next={{ request.path }}" class="vote-btn" title="Log in to vote" aria-label="Log in to upvote">
+      <span class="vote-arrow">▲</span>
+      <span class="vote-count">{{ dispatch.upvotes_count }}</span>
     </a>
     <div class="vote-divider"></div>
-    <a href="/auth?tab=login&next={{ request.path }}" class="vote-btn" title="Log in to vote">
-      ▼ {{ dispatch.downvotes_count }}
+    <a href="/auth?tab=login&next={{ request.path }}" class="vote-btn" title="Log in to vote" aria-label="Log in to downvote">
+      <span class="vote-arrow">▼</span>
+      <span class="vote-count">{{ dispatch.downvotes_count }}</span>
     </a>
   {% endif %}
 </div>

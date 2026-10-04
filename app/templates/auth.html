@@ -1,120 +1,136 @@
 {% extends "base.html" %}
 
-{% block title %}Pen Name — Kotonoki{% endblock %}
+{% block title %}Pen Name — Kotonoki (言の木){% endblock %}
 
 {% block breadcrumb %}
   <span class="crumb-current">Pen Name Entry</span>
 {% endblock %}
 
+{% block mobile_header_left %}
+  <a href="/" class="mobile-back-link" title="Return to feed">
+    ← Feed
+  </a>
+{% endblock %}
+
+{% block mobile_header_center %}
+  <span class="mobile-context-pill">Identity</span>
+{% endblock %}
+
+{% block mobile_header_right %}
+  <span style="font-size: 11px; color: var(--k-text-muted);">Zero-PII</span>
+{% endblock %}
+
 {% block content %}
-  <div class="auth-container">
-    <!-- Tabs: Claim vs Open -->
-    <div class="auth-tabs" role="tablist">
-      <a 
-        href="/auth?tab=register{% if next_url %}&next={{ next_url }}{% endif %}" 
-        class="auth-tab {% if active_tab != 'login' %}active{% endif %}"
-        role="tab"
-        aria-selected="{{ 'true' if active_tab != 'login' else 'false' }}">
-        Claim Pen Name
-      </a>
-      <a 
-        href="/auth?tab=login{% if next_url %}&next={{ next_url }}{% endif %}" 
-        class="auth-tab {% if active_tab == 'login' %}active{% endif %}"
-        role="tab"
-        aria-selected="{{ 'true' if active_tab == 'login' else 'false' }}">
-        Open Desk
-      </a>
-    </div>
+  <div class="auth-wrapper">
+    <div class="auth-container">
+      <!-- Tabs: Claim vs Open -->
+      <div class="auth-tabs" role="tablist">
+        <a 
+          href="/auth?tab=register{% if next_url %}&next={{ next_url }}{% endif %}" 
+          class="auth-tab {% if active_tab != 'login' %}active{% endif %}"
+          role="tab"
+          aria-selected="{{ 'true' if active_tab != 'login' else 'false' }}">
+          Claim Pen Name
+        </a>
+        <a 
+          href="/auth?tab=login{% if next_url %}&next={{ next_url }}{% endif %}" 
+          class="auth-tab {% if active_tab == 'login' %}active{% endif %}"
+          role="tab"
+          aria-selected="{{ 'true' if active_tab == 'login' else 'false' }}">
+          Open Desk
+        </a>
+      </div>
 
-    <div class="auth-body">
-      {% if active_tab == 'login' %}
-        <!-- Open Desk / Login Form -->
-        <form action="/auth/login" method="POST">
-          {{ csrf_field() | safe }}
-          {% if next_url %}
-            <input type="hidden" name="next" value="{{ next_url }}">
-          {% endif %}
+      <div class="auth-body">
+        {% if active_tab == 'login' %}
+          <!-- Open Desk / Login Form -->
+          <form action="/auth/login" method="POST">
+            {{ csrf_field() | safe }}
+            {% if next_url %}
+              <input type="hidden" name="next" value="{{ next_url }}">
+            {% endif %}
 
-          <div class="form-group">
-            <label for="login-handle" class="form-label">Pen Name</label>
-            <input 
-              type="text" 
-              id="login-handle" 
-              name="handle" 
-              class="form-input" 
-              value="{{ handle or '' }}" 
-              required 
-              autocomplete="username" 
-              autofocus>
-          </div>
-
-          <div class="form-group">
-            <label for="login-password" class="form-label">Password</label>
-            <input 
-              type="password" 
-              id="login-password" 
-              name="password" 
-              class="form-input" 
-              required 
-              autocomplete="current-password">
-          </div>
-
-          <button type="submit" class="cmd-btn cmd-btn-primary" style="width:100%; justify-content:center; padding:9px 16px; margin-top:8px;">
-            Open Desk
-          </button>
-        </form>
-
-      {% else %}
-        <!-- Claim Pen Name / Register Form -->
-        <form action="/auth/register" method="POST">
-          {{ csrf_field() | safe }}
-          {% if next_url %}
-            <input type="hidden" name="next" value="{{ next_url }}">
-          {% endif %}
-
-          <div class="form-group">
-            <label for="reg-handle" class="form-label">Desired Pen Name</label>
-            <input 
-              type="text" 
-              id="reg-handle" 
-              name="handle" 
-              class="form-input" 
-              value="{{ handle or '' }}" 
-              pattern="^[a-zA-Z0-9_\-\.]{2,30}$" 
-              title="2-30 characters: letters, numbers, underscores, hyphens, periods" 
-              placeholder="e.g. wandering-ink" 
-              required 
-              autocomplete="username" 
-              autofocus>
-            <div class="form-help">
-              2 to 30 characters. Publicly visible on your published dispatches.
+            <div class="form-group">
+              <label for="login-handle" class="form-label">Pen Name</label>
+              <input 
+                type="text" 
+                id="login-handle" 
+                name="handle" 
+                class="form-input" 
+                value="{{ handle or '' }}" 
+                required 
+                autocomplete="username" 
+                autofocus>
             </div>
+
+            <div class="form-group">
+              <label for="login-password" class="form-label">Password</label>
+              <input 
+                type="password" 
+                id="login-password" 
+                name="password" 
+                class="form-input" 
+                required 
+                autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="cmd-btn cmd-btn-primary auth-submit-btn">
+              Open Desk
+            </button>
+          </form>
+
+        {% else %}
+          <!-- Claim Pen Name / Register Form -->
+          <form action="/auth/register" method="POST">
+            {{ csrf_field() | safe }}
+            {% if next_url %}
+              <input type="hidden" name="next" value="{{ next_url }}">
+            {% endif %}
+
+            <div class="form-group">
+              <label for="reg-handle" class="form-label">Desired Pen Name</label>
+              <input 
+                type="text" 
+                id="reg-handle" 
+                name="handle" 
+                class="form-input" 
+                value="{{ handle or '' }}" 
+                pattern="^[a-zA-Z0-9_\-\.]{2,30}$" 
+                title="2-30 characters: letters, numbers, underscores, hyphens, periods" 
+                placeholder="e.g. wandering-ink" 
+                required 
+                autocomplete="username" 
+                autofocus>
+              <div class="form-help">
+                2 to 30 characters. Publicly visible on your published dispatches.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="reg-password" class="form-label">Password</label>
+              <input 
+                type="password" 
+                id="reg-password" 
+                name="password" 
+                class="form-input" 
+                minlength="8" 
+                placeholder="At least 8 characters" 
+                required 
+                autocomplete="new-password">
+            </div>
+
+            <button type="submit" class="cmd-btn cmd-btn-primary auth-submit-btn">
+              Claim Pen Name & Enter
+            </button>
+          </form>
+        {% endif %}
+
+        <!-- Critical Identity & Zero-Recovery Disclosure -->
+        <div class="auth-disclosure">
+          <strong>Zero-PII Identity:</strong> No email, phone number, or real identity is ever requested.
+          <div style="margin-top:6px; color:#b91c1c;">
+            ⚠ <strong>No Password Recovery:</strong> If you forget your password, this pen name is permanently lost. Store your password safely.
           </div>
-
-          <div class="form-group">
-            <label for="reg-password" class="form-label">Password</label>
-            <input 
-              type="password" 
-              id="reg-password" 
-              name="password" 
-              class="form-input" 
-              minlength="8" 
-              placeholder="At least 8 characters" 
-              required 
-              autocomplete="new-password">
-          </div>
-
-          <button type="submit" class="cmd-btn cmd-btn-primary" style="width:100%; justify-content:center; padding:9px 16px; margin-top:8px;">
-            Claim Pen Name & Enter
-          </button>
-        </form>
-      {% endif %}
-
-      <!-- Critical Identity & Zero-Recovery Disclosure -->
-      <div class="auth-disclosure">
-        <strong>Zero-PII Identity:</strong> No email, phone number, or real identity is ever requested.
-        <div style="margin-top:6px; color:#b91c1c;">
-          ⚠ <strong>No Password Recovery:</strong> If you forget your password, this pen name is permanently lost. Store your password safely.
         </div>
       </div>
     </div>

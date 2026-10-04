@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Branches — Kotonoki (言の木){% endblock %}
+
+{% block breadcrumb %}
+  <span class="crumb-current">All Branches</span>
+{% endblock %}
+
+{% block content %}
+  <div class="branches-screen-container">
+    <div class="feed-header" style="margin-bottom: 16px;">
+      <div>
+        <h1 class="feed-header-title">Public Branches</h1>
+        <div class="feed-header-meta">
+          Shared public namespaces · Open to all pen names
+        </div>
+      </div>
+      <div>
+        <a href="/write" class="cmd-btn cmd-btn-primary">
+          + Start New Branch
+        </a>
+      </div>
+    </div>
+
+    <!-- Overview Card / All Dispatches Primary Tile -->
+    <a href="/" class="branch-card-row branch-card-all">
+      <div class="branch-icon-box">
+        <svg class="branch-folder-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+        </svg>
+      </div>
+      <div class="branch-info-col">
+        <div class="branch-title-text">/all</div>
+        <div class="branch-desc-text">All Dispatches across every branch</div>
+      </div>
+      <div class="branch-count-tag">
+        {{ total_dispatches }} {{ 'dispatch' if total_dispatches == 1 else 'dispatches' }}
+      </div>
+    </a>
+
+    <!-- Branch Directory Grid / List -->
+    <div class="branches-directory-list">
+      {% for item in branches_with_counts %}
+        <a href="/{{ item.branch.slug }}" class="branch-card-row">
+          <div class="branch-icon-box">
+            <svg class="branch-folder-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+            </svg>
+          </div>
+          <div class="branch-info-col">
+            <div class="branch-title-text">/{{ item.branch.slug }}</div>
+            <div class="branch-date-text">Created {{ item.branch.created_at.strftime('%b %d, %Y') }}</div>
+          </div>
+          <div class="branch-count-tag">
+            {{ item.count }} {{ 'dispatch' if item.count == 1 else 'dispatches' }}
+          </div>
+        </a>
+      {% else %}
+        <div class="empty-feed">
+          <div style="font-size: 28px;">📁</div>
+          <div class="empty-feed-title">No branches created yet</div>
+          <p class="empty-feed-desc">Branches are created automatically when writing dispatches.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

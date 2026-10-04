@@ -8,17 +8,37 @@
   <span class="crumb-current">{{ dispatch.title }}</span>
 {% endblock %}
 
+{% block mobile_header_left %}
+  <a href="/{{ dispatch.branch.slug }}" class="mobile-back-link" title="Back to branch">
+    ← /{{ dispatch.branch.slug }}
+  </a>
+{% endblock %}
+
+{% block mobile_header_center %}
+  <span class="mobile-context-pill">Dispatch</span>
+{% endblock %}
+
+{% block mobile_header_right %}
+  <button 
+    type="button" 
+    class="mobile-sticky-trigger" 
+    onclick="openStickyModal('/dispatch/{{ dispatch.id }}/sticky')" 
+    title="Open Sticky Desk memo">
+    📌 Memo
+  </button>
+{% endblock %}
+
 {% block content %}
-  <div style="margin-bottom:12px;">
+  <div class="desktop-only-block" style="margin-bottom: 12px;">
     <a href="/{{ dispatch.branch.slug }}" class="cmd-btn">
       ← Back to /{{ dispatch.branch.slug }}
     </a>
   </div>
 
-  <article class="dispatch-card" style="box-shadow:var(--k-shadow-float);">
-    <header>
-      <h1 class="dispatch-title" style="font-size:24px;">{{ dispatch.title }}</h1>
-      <div class="dispatch-meta" style="margin-top:6px;">
+  <article class="dispatch-card dispatch-detail-card">
+    <header class="dispatch-card-header">
+      <h1 class="dispatch-title dispatch-detail-title">{{ dispatch.title }}</h1>
+      <div class="dispatch-meta">
         <span class="pen-name">{{ dispatch.author.handle }}</span>
         <span>·</span>
         <a href="/{{ dispatch.branch.slug }}" class="branch-tag">/{{ dispatch.branch.slug }}</a>
@@ -29,7 +49,7 @@
       </div>
     </header>
 
-    <div class="dispatch-content" style="font-size:17px; margin: 16px 0;">
+    <div class="dispatch-content dispatch-detail-content">
       {{ dispatch.content_html | safe }}
     </div>
 
@@ -39,7 +59,7 @@
       </div>
     {% endif %}
 
-    <footer class="dispatch-actions" style="margin-top:20px; padding-top:14px;">
+    <footer class="dispatch-actions">
       {% include "partials/vote_widget.html" %}
 
       <div class="secondary-actions">
@@ -53,7 +73,7 @@
 
         <button 
           type="button" 
-          class="cmd-btn" 
+          class="cmd-btn desktop-only-inline" 
           onclick="window.print()" 
           title="Print physical index card memo">
           🖨 Print Memo

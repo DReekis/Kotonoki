@@ -1,9 +1,26 @@
 {% extends "base.html" %}
 
-{% block title %}My Desk — Kotonoki{% endblock %}
+{% block title %}My Desk — Kotonoki (言の木){% endblock %}
 
 {% block breadcrumb %}
   <span class="crumb-current">My Desk</span>
+{% endblock %}
+
+{% block mobile_header_left %}
+  <a href="/" class="mobile-back-link" title="Return to feed">
+    ← Feed
+  </a>
+{% endblock %}
+
+{% block mobile_header_center %}
+  <span class="mobile-context-pill">My Desk</span>
+{% endblock %}
+
+{% block mobile_header_right %}
+  <form action="/auth/logout" method="POST" style="display:inline;">
+    {{ csrf_field() | safe }}
+    <button type="submit" class="mobile-signout-btn">Sign Out</button>
+  </form>
 {% endblock %}
 
 {% block content %}
@@ -13,12 +30,12 @@
       <div class="desk-identity">
         <span class="desk-identity-label">Authenticated Pen Name</span>
         <span class="desk-handle">{{ author.handle }}</span>
-        <span style="font-size:12px; color:var(--k-text-muted); margin-top:2px;">
+        <span class="desk-meta-text">
           Active since {{ author.created_at.strftime('%B %d, %Y') }}
         </span>
       </div>
 
-      <div style="display:flex; gap:8px;">
+      <div class="desktop-only-flex desk-header-actions">
         <a href="/write" class="cmd-btn cmd-btn-primary">✍ New Dispatch</a>
         <form action="/auth/logout" method="POST" style="display:inline;">
           {{ csrf_field() | safe }}
@@ -28,35 +45,35 @@
     </header>
 
     <!-- Author's Dispatches -->
-    <section>
-      <div class="feed-header" style="margin-bottom:14px;">
-        <h2 class="feed-header-title" style="font-size:16px;">Your Dispatches ({{ dispatches | length }})</h2>
+    <section class="desk-section">
+      <div class="feed-header" style="margin-bottom: 14px;">
+        <h2 class="feed-header-title" style="font-size: 16px;">Your Dispatches ({{ dispatches | length }})</h2>
         <span class="feed-header-meta">Manage or Strike your published writings</span>
       </div>
 
       {% if dispatches %}
-        <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="desk-dispatches-list">
           {% for d in dispatches %}
-            <div class="dispatch-card" style="padding:14px 18px; flex-direction:row; align-items:center; justify-content:space-between;">
-              <div style="min-width:0; flex:1;">
-                <h3 style="font-size:16px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            <div class="dispatch-card desk-dispatch-item">
+              <div class="desk-item-content">
+                <h3 class="desk-item-title">
                   <a href="/{{ d.branch.slug }}/{{ d.id }}">{{ d.title }}</a>
                 </h3>
-                <div style="font-size:12px; color:var(--k-text-muted); margin-top:3px;">
-                  <a href="/{{ d.branch.slug }}" class="branch-tag" style="font-size:11px;">/{{ d.branch.slug }}</a>
+                <div class="desk-item-meta">
+                  <a href="/{{ d.branch.slug }}" class="branch-tag" style="font-size: 11px;">/{{ d.branch.slug }}</a>
                   <span>·</span>
                   <span>{{ d.published_at.strftime('%b %d, %Y') }}</span>
                   <span>·</span>
                   <span>▲ {{ d.upvotes_count }}  ▼ {{ d.downvotes_count }}</span>
-                  {% if d.image_path %}<span>· 📷 Image</span>{% endif %}
+                  {% if d.image_path %}<span>· 📷</span>{% endif %}
                 </div>
               </div>
 
-              <div style="display:flex; align-items:center; gap:8px; margin-left:16px; flex-shrink:0;">
-                <a href="/{{ d.branch.slug }}/{{ d.id }}" class="cmd-btn" style="padding:3px 10px; font-size:12px;">View</a>
+              <div class="desk-item-actions">
+                <a href="/{{ d.branch.slug }}/{{ d.id }}" class="cmd-btn desk-view-btn">View</a>
                 <form action="/dispatch/{{ d.id }}/strike" method="POST" onsubmit="return confirm('Strike this dispatch permanently? The writing and image will be deleted forever.')" style="display:inline;">
                   {{ csrf_field() | safe }}
-                  <button type="submit" class="cmd-btn strike-btn" style="padding:3px 10px; font-size:12px;" title="Permanently delete this dispatch">
+                  <button type="submit" class="cmd-btn strike-btn" title="Permanently delete this dispatch">
                     ✕ Strike
                   </button>
                 </form>
@@ -65,10 +82,10 @@
           {% endfor %}
         </div>
       {% else %}
-        <div class="empty-feed" style="padding:32px 16px;">
-          <div style="font-size:24px;">📝</div>
-          <div class="empty-feed-title" style="font-size:15px;">You have not published any dispatches yet.</div>
-          <div style="margin-top:6px;">
+        <div class="empty-feed" style="padding: 32px 16px;">
+          <div style="font-size: 24px;">📝</div>
+          <div class="empty-feed-title" style="font-size: 15px;">You have not published any dispatches yet.</div>
+          <div style="margin-top: 8px;">
             <a href="/write" class="cmd-btn cmd-btn-primary">Write your first dispatch</a>
           </div>
         </div>
@@ -76,8 +93,8 @@
     </section>
 
     <!-- Password Management -->
-    <section style="background:var(--k-surface); border:1px solid var(--k-border-subtle); border-radius:var(--k-radius-md); padding:20px; max-width:480px;">
-      <h2 style="font-size:15px; font-weight:600; color:var(--k-primary); margin-bottom:14px;">
+    <section class="desk-section desk-security-card">
+      <h2 class="desk-security-title">
         Change Pen Name Password
       </h2>
 
@@ -99,7 +116,7 @@
           <input type="password" id="confirm_password" name="confirm_password" class="form-input" minlength="8" required autocomplete="new-password">
         </div>
 
-        <button type="submit" class="cmd-btn cmd-btn-primary" style="margin-top:4px;">
+        <button type="submit" class="cmd-btn cmd-btn-primary" style="margin-top: 6px; padding: 8px 18px;">
           Update Password
         </button>
       </form>

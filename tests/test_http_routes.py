@@ -42,6 +42,10 @@ def test_home_and_static_routes(client):
     assert res_manifest.status_code == 200
     assert b"Kotonoki" in res_manifest.data
 
+    res_branches = client.get("/branches")
+    assert res_branches.status_code == 200
+    assert b"Public Branches" in res_branches.data
+
     res_sw = client.get("/sw.js")
     assert res_sw.status_code == 200
     assert b"kotonoki-v1" in res_sw.data

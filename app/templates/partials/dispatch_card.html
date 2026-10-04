@@ -1,13 +1,13 @@
 <article class="dispatch-card" id="dispatch-{{ d.id }}">
-  <header>
+  <header class="dispatch-card-header">
     <h2 class="dispatch-title">
       <a href="/{{ d.branch.slug }}/{{ d.id }}">{{ d.title }}</a>
     </h2>
     <div class="dispatch-meta">
       <span class="pen-name">{{ d.author.handle }}</span>
-      <span>·</span>
+      <span class="meta-sep">·</span>
       <a href="/{{ d.branch.slug }}" class="branch-tag">/{{ d.branch.slug }}</a>
-      <span>·</span>
+      <span class="meta-sep">·</span>
       <time datetime="{{ d.published_at.isoformat() }}" title="{{ d.published_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}">
         {{ d.published_at | time_ago }}
       </time>
@@ -34,15 +34,16 @@
         type="button" 
         class="action-btn-subtle" 
         onclick="openStickyModal('/dispatch/{{ d.id }}/sticky')" 
-        title="View as physical Sticky Desk memo">
-        📌 Sticky Desk
+        title="View as physical Sticky Desk memo"
+        aria-label="View as physical Sticky Desk memo">
+        📌 <span class="action-btn-text">Sticky Desk</span>
       </button>
 
       {% if current_user and current_user.id == d.author_id %}
         <form action="/dispatch/{{ d.id }}/strike" method="POST" onsubmit="return confirm('Strike this dispatch permanently? This cannot be undone.')" style="display:inline;">
           {{ csrf_field() | safe }}
-          <button type="submit" class="action-btn-subtle" style="color:var(--k-error-text);" title="Permanently delete dispatch">
-            ✕ Strike
+          <button type="submit" class="action-btn-subtle strike-action-btn" title="Permanently delete dispatch" aria-label="Strike dispatch">
+            ✕ <span class="action-btn-text">Strike</span>
           </button>
         </form>
       {% else %}
@@ -50,8 +51,9 @@
           type="button" 
           class="action-btn-subtle" 
           onclick="const r = prompt('Reason for reporting this dispatch (Spam, Harassment, Illegal, Other):', 'Spam'); if(r){ fetch('/dispatch/{{ d.id }}/report', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token() }}' }, body: 'reason=' + encodeURIComponent(r) }).then(() => alert('Report submitted. Thank you.')); }"
-          title="Report dispatch">
-          ⚐ Report
+          title="Report dispatch"
+          aria-label="Report dispatch">
+          ⚐ <span class="action-btn-text">Report</span>
         </button>
       {% endif %}
     </div>

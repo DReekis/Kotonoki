@@ -1,9 +1,28 @@
 {% extends "base.html" %}
 
-{% block title %}New Dispatch — Kotonoki{% endblock %}
+{% block title %}New Dispatch — Kotonoki (言の木){% endblock %}
+
+{% block body_class %}write-page-body{% endblock %}
 
 {% block breadcrumb %}
   <span class="crumb-current">New Dispatch</span>
+{% endblock %}
+
+<!-- Dedicated Mobile Header Overrides for Write Mode -->
+{% block mobile_header_left %}
+  <a href="javascript:history.back()" class="mobile-back-link" title="Cancel and return">
+    ← Cancel
+  </a>
+{% endblock %}
+
+{% block mobile_header_center %}
+  <span class="mobile-context-pill">New Dispatch</span>
+{% endblock %}
+
+{% block mobile_header_right %}
+  <button type="submit" form="dispatch-write-form" class="mobile-publish-btn" id="mobile-publish-submit">
+    Publish
+  </button>
 {% endblock %}
 
 {% block extra_head %}
@@ -11,8 +30,9 @@
 {% endblock %}
 
 {% block content %}
-  <div style="max-width: 820px; margin: 0 auto; width: 100%;">
-    <div class="feed-header">
+  <div class="write-desk-container">
+    <!-- Desktop Header -->
+    <div class="desktop-only-block write-view-header">
       <div>
         <h1 class="feed-header-title">Compose Dispatch</h1>
         <div class="feed-header-meta">Chronological micro-publishing · One image maximum</div>
@@ -21,99 +41,98 @@
 
     <!-- Local Draft Restoration Banner -->
     <div id="draft-restore-banner" class="draft-banner" role="status">
-      <div>
-        <strong>Unsaved Draft Found:</strong> You have an unfinished dispatch stored in your browser.
+      <div class="draft-banner-text">
+        <strong>Unsaved Draft:</strong> You have an unfinished dispatch stored in your browser.
       </div>
-      <div style="display:flex; gap:8px;">
-        <button type="button" id="restore-draft-btn" class="cmd-btn cmd-btn-primary" style="padding:2px 8px; font-size:11.5px;">Restore Draft</button>
-        <button type="button" id="discard-draft-btn" class="cmd-btn" style="padding:2px 8px; font-size:11.5px;">Discard</button>
+      <div class="draft-banner-actions">
+        <button type="button" id="restore-draft-btn" class="cmd-btn cmd-btn-primary">Restore</button>
+        <button type="button" id="discard-draft-btn" class="cmd-btn">Discard</button>
       </div>
     </div>
 
-    <form id="dispatch-write-form" action="/write" method="POST" enctype="multipart/form-data" style="margin-top:16px;">
+    <form id="dispatch-write-form" action="/write" method="POST" enctype="multipart/form-data" class="dispatch-write-form">
       {{ csrf_field() | safe }}
 
-      <!-- Title Input -->
-      <div class="form-group">
-        <label for="dispatch-title-input" class="form-label">Dispatch Title</label>
-        <input 
-          type="text" 
-          id="dispatch-title-input" 
-          name="title" 
-          class="form-input" 
-          placeholder="Give your dispatch a clear title..." 
-          maxlength="200" 
-          required 
-          autofocus>
-      </div>
-
-      <!-- Branch Input -->
-      <div class="form-group">
-        <label for="dispatch-branch-input" class="form-label">Public Branch</label>
+      <!-- Branch Picker Bar -->
+      <div class="write-branch-row">
+        <span class="branch-prefix-label">/</span>
         <input 
           type="text" 
           id="dispatch-branch-input" 
           name="branch" 
-          class="form-input" 
-          placeholder="e.g. cooking, books, midnight-thoughts" 
+          class="branch-field-input" 
+          placeholder="branch-name (e.g. cooking, books, midnight-thoughts)" 
           value="{{ default_branch }}" 
-          required>
-        <div class="form-help">
-          Branches are public shared spaces. Names are automatically converted to clean lowercase kebab-case (e.g. "Cast Iron" → /cast-iron).
-        </div>
+          required 
+          autocomplete="off" 
+          aria-label="Public Branch Name">
       </div>
 
-      <!-- Single Image Upload (Optional) -->
-      <div class="form-group">
-        <label for="dispatch-image-input" class="form-label">Optional Image (At most one)</label>
+      <!-- Title Input -->
+      <div class="write-title-row">
         <input 
-          type="file" 
-          id="dispatch-image-input" 
-          name="image" 
-          class="form-input" 
-          accept="image/jpeg,image/png,image/webp">
-        <div class="form-help">
-          JPEG, PNG, or WebP up to 10MB. All EXIF and GPS coordinates are automatically stripped; images are resized to a max dimension of 1600px and converted to WebP.
-        </div>
+          type="text" 
+          id="dispatch-title-input" 
+          name="title" 
+          class="write-title-input" 
+          placeholder="Title of your dispatch..." 
+          maxlength="200" 
+          required 
+          autofocus 
+          aria-label="Dispatch Title">
       </div>
 
-      <!-- WordPad-Style Restricted Editor Card -->
-      <div class="form-group">
-        <label class="form-label">Dispatch Body</label>
-        <div class="editor-desk-card">
-          <!-- WordPad Toolbar -->
-          <div id="editor-toolbar" class="editor-toolbar" role="toolbar" aria-label="Rich text formatting">
-            <button type="button" class="editor-tool-btn" data-command="bold" title="Bold (Ctrl+B)"><b>B</b></button>
-            <button type="button" class="editor-tool-btn" data-command="italic" title="Italic (Ctrl+I)"><i>I</i></button>
-            <button type="button" class="editor-tool-btn" data-command="underline" title="Underline (Ctrl+U)"><u>U</u></button>
-            <button type="button" class="editor-tool-btn" data-command="highlight" title="Yellow Highlight"><mark style="background:#fef08a; padding:0 3px;">abc</mark></button>
-            
-            <div class="editor-tool-sep"></div>
-            
-            <button type="button" class="editor-tool-btn" data-command="blockquote" title="Blockquote">””</button>
-            <button type="button" class="editor-tool-btn" data-command="link" title="Hyperlink">🔗</button>
+      <!-- Image Selection Status Bar (Hidden file input triggered via button) -->
+      <input 
+        type="file" 
+        id="dispatch-image-input" 
+        name="image" 
+        accept="image/jpeg,image/png,image/webp" 
+        style="display:none;">
 
-            <div class="editor-tool-sep"></div>
-
-            <button type="button" class="editor-tool-btn" data-command="undo" title="Undo (Ctrl+Z)">↺</button>
-            <button type="button" class="editor-tool-btn" data-command="redo" title="Redo (Ctrl+Y)">↻</button>
-          </div>
-
-          <!-- Tiptap Editor Target Area -->
-          <div id="tiptap-editor" class="tiptap-content-box" aria-label="Dispatch text body"></div>
-
-          <!-- Hidden Input for Form Submission -->
-          <textarea id="dispatch-content-input" name="content_html" style="display:none;"></textarea>
-        </div>
-        <div class="form-help">
-          Formatting is restrained: Bold, Italic, Underline, Yellow Marker, Blockquotes, Links. No distracting arbitrary styles.
-        </div>
+      <div id="image-preview-bar" class="image-preview-bar" style="display:none;">
+        <span class="image-preview-label">📷 Attached: <span id="image-filename"></span></span>
+        <button type="button" id="image-remove-btn" class="image-remove-btn" title="Remove image">✕ Remove</button>
       </div>
 
-      <!-- Action Buttons -->
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+      <!-- WordPad-Style / Mobile Fullscreen Editor Card -->
+      <div class="editor-workspace-card">
+        <!-- Integrated Formatting Toolbar -->
+        <div id="editor-toolbar" class="editor-toolbar" role="toolbar" aria-label="Rich text formatting">
+          <button type="button" class="editor-tool-btn" data-command="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+          <button type="button" class="editor-tool-btn" data-command="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+          <button type="button" class="editor-tool-btn" data-command="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+          <button type="button" class="editor-tool-btn" data-command="highlight" title="Yellow Highlight"><mark class="kotonoki-highlight">abc</mark></button>
+          
+          <div class="editor-tool-sep"></div>
+          
+          <button type="button" class="editor-tool-btn" data-command="blockquote" title="Blockquote">””</button>
+          <button type="button" class="editor-tool-btn" data-command="link" title="Hyperlink">🔗</button>
+
+          <div class="editor-tool-sep"></div>
+
+          <!-- Integrated Image Button -->
+          <button type="button" id="image-attach-btn" class="editor-tool-btn image-trigger-btn" title="Attach optional image">
+            📷 <span class="image-btn-text">Image</span>
+          </button>
+
+          <div class="editor-tool-sep desktop-only-inline"></div>
+
+          <button type="button" class="editor-tool-btn desktop-only-inline" data-command="undo" title="Undo (Ctrl+Z)">↺</button>
+          <button type="button" class="editor-tool-btn desktop-only-inline" data-command="redo" title="Redo (Ctrl+Y)">↻</button>
+        </div>
+
+        <!-- Tiptap Editor Target Area -->
+        <div id="tiptap-editor" class="tiptap-content-box" aria-label="Dispatch text body"></div>
+
+        <!-- Hidden Input for Form Submission -->
+        <textarea id="dispatch-content-input" name="content_html" style="display:none;"></textarea>
+      </div>
+
+      <!-- Desktop Bottom Action Row -->
+      <div class="desktop-only-flex write-desktop-actions">
         <a href="/" class="cmd-btn">Cancel</a>
-        <button type="submit" class="cmd-btn cmd-btn-primary" style="padding:8px 20px; font-size:14px;">
+        <button type="submit" class="cmd-btn cmd-btn-primary" style="padding:8px 24px; font-size:14px;">
           Publish to Branch
         </button>
       </div>
@@ -122,11 +141,42 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // 1. Initialize Tiptap Editor
       if (typeof window.initKotonokiEditor === 'function') {
         window.kotonokiEditor = window.initKotonokiEditor({
           elementId: 'tiptap-editor',
           inputId: 'dispatch-content-input',
           toolbarId: 'editor-toolbar'
+        });
+      }
+
+      // 2. Image Picker Wiring
+      const attachBtn = document.getElementById('image-attach-btn');
+      const fileInput = document.getElementById('dispatch-image-input');
+      const previewBar = document.getElementById('image-preview-bar');
+      const filenameSpan = document.getElementById('image-filename');
+      const removeBtn = document.getElementById('image-remove-btn');
+
+      if (attachBtn && fileInput) {
+        attachBtn.addEventListener('click', () => fileInput.click());
+      }
+
+      if (fileInput) {
+        fileInput.addEventListener('change', () => {
+          if (fileInput.files && fileInput.files[0]) {
+            const f = fileInput.files[0];
+            if (filenameSpan) filenameSpan.textContent = f.name;
+            if (previewBar) previewBar.style.display = 'flex';
+          } else {
+            if (previewBar) previewBar.style.display = 'none';
+          }
+        });
+      }
+
+      if (removeBtn && fileInput) {
+        removeBtn.addEventListener('click', () => {
+          fileInput.value = '';
+          if (previewBar) previewBar.style.display = 'none';
         });
       }
     });

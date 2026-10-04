@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 2. Mobile Navigation Pane Drawer Toggle
   const navToggle = document.getElementById('nav-toggle-btn');
+  const navClose = document.getElementById('nav-close-btn');
   const navPane = document.getElementById('navigation-pane');
   const navBackdrop = document.getElementById('nav-backdrop');
 
@@ -22,10 +23,22 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (navToggle) {
-    navToggle.addEventListener('click', () => toggleNav());
+    navToggle.addEventListener('click', () => toggleNav(true));
+  }
+  if (navClose) {
+    navClose.addEventListener('click', () => toggleNav(false));
   }
   if (navBackdrop) {
     navBackdrop.addEventListener('click', () => toggleNav(false));
+  }
+
+  // Auto-close drawer when branch link tapped on small screens
+  if (navPane) {
+    navPane.addEventListener('click', (e) => {
+      if (e.target.closest('a') && window.innerWidth < 768) {
+        toggleNav(false);
+      }
+    });
   }
 
   // 3. Local Draft Management (for /write)
@@ -133,8 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const header = document.querySelector('.sticky-note-header');
     if (!note || !header) return;
 
-    // Only allow drag on desktop (pointer device without touch coarse)
-    if (window.matchMedia('(pointer: coarse)').matches) return;
+    // Only allow drag on desktop screens (pointer device without touch coarse and >= 768px)
+    if (window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768) return;
 
     let isDragging = false;
     let startX = 0, startY = 0;
