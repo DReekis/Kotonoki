@@ -22,7 +22,7 @@ def test_requirements_txt_complete():
     assert req_path.exists(), "requirements.txt must exist in repository root"
     
     content = req_path.read_text(encoding="utf-8").lower()
-    critical_packages = ["flask", "flask-sqlalchemy", "flask-limiter", "sqlalchemy", "argon2-cffi", "bleach", "pillow", "psycopg2-binary"]
+    critical_packages = ["flask", "flask-sqlalchemy", "flask-limiter", "sqlalchemy", "argon2-cffi", "nh3", "bleach", "pillow", "psycopg2-binary"]
     for pkg in critical_packages:
         assert pkg in content, f"Missing critical package in requirements.txt: {pkg}"
 
