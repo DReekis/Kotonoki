@@ -90,3 +90,30 @@ def test_static_mime_types_and_delivery():
         assert r_js.status_code == 200
         assert any(t in r_js.headers.get("Content-Type", "") for t in ["javascript", "text/plain"])
 
+def test_vercel_rewrite_path_resolution():
+    """Verify that VercelPathFixMiddleware maps /api/index rewrite paths to correct routes."""
+    from api.index import app
+    with app.test_client() as client:
+        # Case 1: Rewrite to /api/index with x-matched-path: /
+        r_home = client.get("/api/index", headers={"x-matched-path": "/"})
+        assert r_home.status_code == 200
+        assert b"All Dispatches" in r_home.data
+        assert b"Error 404" not in r_home.data
+
+        # Case 2: Rewrite to /api/index with x-matched-path: /branches
+        r_branches = client.get("/api/index", headers={"x-matched-path": "/branches"})
+        assert r_branches.status_code == 200
+        assert b"Browse Branches" in r_branches.data or b"Branches" in r_branches.data
+        assert b"Error 404" not in r_branches.data
+
+        # Case 3: Direct /api/index hit without headers -> fallback to home
+        r_direct = client.get("/api/index")
+        assert r_direct.status_code == 200
+        assert b"All Dispatches" in r_direct.data
+        assert b"Error 404" not in r_direct.data
+
+        # Case 4: Subpath hit /api/index/branches -> redirect to /branches
+        r_subpath = client.get("/api/index/branches")
+        assert r_subpath.status_code in (200, 302)
+
+

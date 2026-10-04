@@ -134,4 +134,31 @@ def create_app(config_class=Config):
     def server_error(e):
         return render_template("errors/error.html", code=500, title="System Error", message="An unexpected error occurred. The system has preserved its state."), 500
 
+    class VercelPathFixMiddleware:
+        def __init__(self, wsgi_app):
+            self.wsgi_app = wsgi_app
+
+        def __call__(self, environ, start_response):
+            matched_path = (
+                environ.get("HTTP_X_MATCHED_PATH")
+                or environ.get("HTTP_X_FORWARDED_URI")
+                or environ.get("HTTP_X_NOW_ROUTE_MATCHES")
+            )
+            if matched_path:
+                if "?" in matched_path:
+                    path_part, query_part = matched_path.split("?", 1)
+                    environ["PATH_INFO"] = path_part
+                    if not environ.get("QUERY_STRING"):
+                        environ["QUERY_STRING"] = query_part
+                else:
+                    environ["PATH_INFO"] = matched_path
+            elif environ.get("PATH_INFO") in ("/api/index", "/api/index.py", "/api"):
+                environ["PATH_INFO"] = "/"
+            elif environ.get("PATH_INFO", "").startswith("/api/index/"):
+                environ["PATH_INFO"] = environ["PATH_INFO"][len("/api/index"):]
+
+            return self.wsgi_app(environ, start_response)
+
+    app.wsgi_app = VercelPathFixMiddleware(app.wsgi_app)
+
     return app

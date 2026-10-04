@@ -60,6 +60,15 @@ def branches_list():
         active_nav="branches"
     )
 
+@feed_bp.route("/api/index", methods=["GET"])
+@feed_bp.route("/api", methods=["GET"])
+def vercel_entrypoint_fallback():
+    return all_dispatches()
+
+@feed_bp.route("/api/index/<path:rest>", methods=["GET"])
+def vercel_subpath_fallback(rest: str):
+    return redirect(f"/{rest}")
+
 @feed_bp.route("/<string:branch_slug>", methods=["GET"])
 def branch_feed(branch_slug: str):
     slug = branch_slug.lower()
