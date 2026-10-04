@@ -1,0 +1,14 @@
+{% for d in dispatches %}
+  {% include "partials/dispatch_card.html" %}
+{% endfor %}
+
+{% if has_more and next_cursor %}
+  <div 
+    class="feed-sentinel" 
+    hx-get="{{ feed_url }}?before={{ next_cursor }}&partial=true" 
+    hx-trigger="revealed" 
+    hx-swap="outerHTML"
+    style="text-align:center; padding:18px; color:var(--k-text-muted); font-size:12.5px;">
+    <span>Loading chronological dispatches...</span>
+  </div>
+{% endif %}

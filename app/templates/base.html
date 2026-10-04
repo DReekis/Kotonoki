@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Kotonoki (言の木) — A quiet, chronological public journaling and micro-publishing platform.">
+  <meta name="theme-color" content="#2b579a">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
+  <title>{% block title %}Kotonoki (言の木) — Public Journaling{% endblock %}</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="/static/css/tokens.css">
+  <link rel="stylesheet" href="/static/css/explorer.css">
+  <link rel="stylesheet" href="/static/css/sticky.css">
+  <link rel="stylesheet" href="/static/css/print.css" media="print">
+
+  <!-- HTMX & Core App Scripts -->
+  <script src="/static/js/htmx.min.js" defer></script>
+  <script src="/static/js/app.js" defer></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="app-window">
+    <!-- Top Explorer Address / Breadcrumb Bar -->
+    <header class="explorer-top-bar">
+      <a href="/" class="brand-section" title="Kotonoki (言の木) — Home">
+        <div class="brand-icon">言</div>
+        <div>
+          <span class="brand-title">Kotonoki</span>
+          <span class="brand-sub">言の木</span>
+        </div>
+      </a>
+
+      <!-- Address Path -->
+      <nav class="address-bar" aria-label="Breadcrumb">
+        <div class="crumb-segment">
+          <a href="/">Kotonoki</a>
+          <span class="crumb-separator">▸</span>
+        </div>
+        <div class="crumb-segment">
+          <a href="/">Branches</a>
+          <span class="crumb-separator">▸</span>
+        </div>
+        <div class="crumb-segment crumb-current">
+          {% block breadcrumb %}/all{% endblock %}
+        </div>
+      </nav>
+
+      <!-- Identity Strip -->
+      <div class="user-identity-strip">
+        {% if current_user %}
+          <a href="/desk" class="cmd-btn" title="Open My Desk">
+            <span style="color:#2b579a;">●</span> {{ current_user.handle }}
+          </a>
+        {% else %}
+          <a href="/auth" class="cmd-btn" title="Claim Pen Name or Log In">
+            Pen Name
+          </a>
+        {% endif %}
+      </div>
+    </header>
+
+    <!-- Command Bar (Toolbar) -->
+    <div class="command-bar">
+      <div class="command-group">
+        <button id="nav-toggle-btn" class="cmd-btn nav-toggle-btn" aria-label="Toggle branches navigation">
+          📁 Branches
+        </button>
+
+        <a href="/write" class="cmd-btn cmd-btn-primary" title="Compose a new dispatch">
+          ✍ New Dispatch
+        </a>
+
+        <a href="/" class="cmd-btn" title="View all dispatches chronologically">
+          All Dispatches
+        </a>
+      </div>
+
+      <div class="command-group">
+        {% if current_user %}
+          <a href="/desk" class="cmd-btn">My Desk</a>
+          <form action="/auth/logout" method="POST" style="display:inline;">
+            {{ csrf_field() | safe }}
+            <button type="submit" class="cmd-btn" style="color:var(--k-text-muted);">Sign Out</button>
+          </form>
+        {% else %}
+          <a href="/auth?tab=register" class="cmd-btn">Claim Pen Name</a>
+          <a href="/auth?tab=login" class="cmd-btn">Log In</a>
+        {% endif %}
+        <a href="/about" class="cmd-btn" style="color:var(--k-text-muted);">About</a>
+        <a href="/rules" class="cmd-btn" style="color:var(--k-text-muted);">Rules</a>
+      </div>
+    </div>
+
+    <!-- Flash Messages Container -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'error' if category == 'error' else ('success' if category == 'success' else 'info') }} alert-dismissible" role="alert">
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Main Workspace Layout -->
+    <div class="layout-body">
+      <!-- Mobile Backdrop -->
+      <div id="nav-backdrop" class="nav-backdrop"></div>
+
+      <!-- Navigation Pane (Folders / Branches) -->
+      <aside id="navigation-pane" class="navigation-pane" aria-label="Branches Navigation">
+        <div>
+          <div class="nav-section-title">Branches</div>
+          <ul class="branch-tree">
+            <li>
+              <a href="/" class="branch-item-link {% if not current_branch %}active{% endif %}">
+                <svg class="branch-folder-icon" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                </svg>
+                <span>/all</span>
+              </a>
+            </li>
+            {% for b in branches %}
+              <li>
+                <a href="/{{ b.slug }}" class="branch-item-link {% if current_branch and current_branch.slug == b.slug %}active{% endif %}">
+                  <svg class="branch-folder-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                  </svg>
+                  <span>/{{ b.slug }}</span>
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div style="margin-top:auto; padding: 12px 8px; border-top: 1px solid #e2edf6; font-size:11.5px; color:var(--k-text-muted);">
+          <div>Kotonoki (言の木)</div>
+          <div style="margin-top:2px;">Chronological Public Journal</div>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main id="content-area" class="content-area">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <!-- Sticky Desk Modal Container -->
+  <div id="sticky-modal-container" role="dialog" aria-modal="true" aria-label="Sticky Desk Memo"></div>
+</body>
+</html>

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}{{ dispatch.title }} — /{{ dispatch.branch.slug }} — Kotonoki{% endblock %}
+
+{% block breadcrumb %}
+  <a href="/{{ dispatch.branch.slug }}">/{{ dispatch.branch.slug }}</a>
+  <span class="crumb-separator">▸</span>
+  <span class="crumb-current">{{ dispatch.title }}</span>
+{% endblock %}
+
+{% block content %}
+  <div style="margin-bottom:12px;">
+    <a href="/{{ dispatch.branch.slug }}" class="cmd-btn">
+      ← Back to /{{ dispatch.branch.slug }}
+    </a>
+  </div>
+
+  <article class="dispatch-card" style="box-shadow:var(--k-shadow-float);">
+    <header>
+      <h1 class="dispatch-title" style="font-size:24px;">{{ dispatch.title }}</h1>
+      <div class="dispatch-meta" style="margin-top:6px;">
+        <span class="pen-name">{{ dispatch.author.handle }}</span>
+        <span>·</span>
+        <a href="/{{ dispatch.branch.slug }}" class="branch-tag">/{{ dispatch.branch.slug }}</a>
+        <span>·</span>
+        <time datetime="{{ dispatch.published_at.isoformat() }}">
+          {{ dispatch.published_at.strftime('%B %d, %Y · %H:%M UTC') }}
+        </time>
+      </div>
+    </header>
+
+    <div class="dispatch-content" style="font-size:17px; margin: 16px 0;">
+      {{ dispatch.content_html | safe }}
+    </div>
+
+    {% if dispatch.image_path %}
+      <div class="dispatch-image-container">
+        <img src="{{ dispatch.image_path }}" alt="Dispatch image for {{ dispatch.title }}" class="dispatch-image">
+      </div>
+    {% endif %}
+
+    <footer class="dispatch-actions" style="margin-top:20px; padding-top:14px;">
+      {% include "partials/vote_widget.html" %}
+
+      <div class="secondary-actions">
+        <button 
+          type="button" 
+          class="cmd-btn" 
+          onclick="openStickyModal('/dispatch/{{ dispatch.id }}/sticky')" 
+          title="Open in physical Sticky Desk memo mode">
+          📌 Sticky Desk
+        </button>
+
+        <button 
+          type="button" 
+          class="cmd-btn" 
+          onclick="window.print()" 
+          title="Print physical index card memo">
+          🖨 Print Memo
+        </button>
+
+        {% if current_user and current_user.id == dispatch.author_id %}
+          <form action="/dispatch/{{ dispatch.id }}/strike" method="POST" onsubmit="return confirm('Strike this dispatch permanently? This cannot be undone.')" style="display:inline;">
+            {{ csrf_field() | safe }}
+            <button type="submit" class="cmd-btn strike-btn" title="Permanently delete dispatch and image">
+              ✕ Strike
+            </button>
+          </form>
+        {% else %}
+          <button 
+            type="button" 
+            class="action-btn-subtle" 
+            onclick="const r = prompt('Reason for reporting this dispatch (Spam, Harassment, Illegal, Other):', 'Spam'); if(r){ fetch('/dispatch/{{ dispatch.id }}/report', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token() }}' }, body: 'reason=' + encodeURIComponent(r) }).then(() => alert('Report submitted. Thank you.')); }"
+            title="Report dispatch">
+            ⚐ Report
+          </button>
+        {% endif %}
+      </div>
+    </footer>
+  </article>
+{% endblock %}

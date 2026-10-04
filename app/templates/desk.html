@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}My Desk — Kotonoki{% endblock %}
+
+{% block breadcrumb %}
+  <span class="crumb-current">My Desk</span>
+{% endblock %}
+
+{% block content %}
+  <div class="desk-container">
+    <!-- Desk Identity Banner -->
+    <header class="desk-header">
+      <div class="desk-identity">
+        <span class="desk-identity-label">Authenticated Pen Name</span>
+        <span class="desk-handle">{{ author.handle }}</span>
+        <span style="font-size:12px; color:var(--k-text-muted); margin-top:2px;">
+          Active since {{ author.created_at.strftime('%B %d, %Y') }}
+        </span>
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <a href="/write" class="cmd-btn cmd-btn-primary">✍ New Dispatch</a>
+        <form action="/auth/logout" method="POST" style="display:inline;">
+          {{ csrf_field() | safe }}
+          <button type="submit" class="cmd-btn">Sign Out</button>
+        </form>
+      </div>
+    </header>
+
+    <!-- Author's Dispatches -->
+    <section>
+      <div class="feed-header" style="margin-bottom:14px;">
+        <h2 class="feed-header-title" style="font-size:16px;">Your Dispatches ({{ dispatches | length }})</h2>
+        <span class="feed-header-meta">Manage or Strike your published writings</span>
+      </div>
+
+      {% if dispatches %}
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          {% for d in dispatches %}
+            <div class="dispatch-card" style="padding:14px 18px; flex-direction:row; align-items:center; justify-content:space-between;">
+              <div style="min-width:0; flex:1;">
+                <h3 style="font-size:16px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  <a href="/{{ d.branch.slug }}/{{ d.id }}">{{ d.title }}</a>
+                </h3>
+                <div style="font-size:12px; color:var(--k-text-muted); margin-top:3px;">
+                  <a href="/{{ d.branch.slug }}" class="branch-tag" style="font-size:11px;">/{{ d.branch.slug }}</a>
+                  <span>·</span>
+                  <span>{{ d.published_at.strftime('%b %d, %Y') }}</span>
+                  <span>·</span>
+                  <span>▲ {{ d.upvotes_count }}  ▼ {{ d.downvotes_count }}</span>
+                  {% if d.image_path %}<span>· 📷 Image</span>{% endif %}
+                </div>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:8px; margin-left:16px; flex-shrink:0;">
+                <a href="/{{ d.branch.slug }}/{{ d.id }}" class="cmd-btn" style="padding:3px 10px; font-size:12px;">View</a>
+                <form action="/dispatch/{{ d.id }}/strike" method="POST" onsubmit="return confirm('Strike this dispatch permanently? The writing and image will be deleted forever.')" style="display:inline;">
+                  {{ csrf_field() | safe }}
+                  <button type="submit" class="cmd-btn strike-btn" style="padding:3px 10px; font-size:12px;" title="Permanently delete this dispatch">
+                    ✕ Strike
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-feed" style="padding:32px 16px;">
+          <div style="font-size:24px;">📝</div>
+          <div class="empty-feed-title" style="font-size:15px;">You have not published any dispatches yet.</div>
+          <div style="margin-top:6px;">
+            <a href="/write" class="cmd-btn cmd-btn-primary">Write your first dispatch</a>
+          </div>
+        </div>
+      {% endif %}
+    </section>
+
+    <!-- Password Management -->
+    <section style="background:var(--k-surface); border:1px solid var(--k-border-subtle); border-radius:var(--k-radius-md); padding:20px; max-width:480px;">
+      <h2 style="font-size:15px; font-weight:600; color:var(--k-primary); margin-bottom:14px;">
+        Change Pen Name Password
+      </h2>
+
+      <form action="/desk/change-password" method="POST">
+        {{ csrf_field() | safe }}
+
+        <div class="form-group">
+          <label for="old_password" class="form-label">Current Password</label>
+          <input type="password" id="old_password" name="old_password" class="form-input" required autocomplete="current-password">
+        </div>
+
+        <div class="form-group">
+          <label for="new_password" class="form-label">New Password</label>
+          <input type="password" id="new_password" name="new_password" class="form-input" minlength="8" required autocomplete="new-password">
+        </div>
+
+        <div class="form-group">
+          <label for="confirm_password" class="form-label">Confirm New Password</label>
+          <input type="password" id="confirm_password" name="confirm_password" class="form-input" minlength="8" required autocomplete="new-password">
+        </div>
+
+        <button type="submit" class="cmd-btn cmd-btn-primary" style="margin-top:4px;">
+          Update Password
+        </button>
+      </form>
+    </section>
+  </div>
+{% endblock %}

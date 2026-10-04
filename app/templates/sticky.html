@@ -1,0 +1,47 @@
+<div class="sticky-desk-note" role="document">
+  <!-- Visual Tape Accent -->
+  <div class="sticky-tape" aria-hidden="true"></div>
+
+  <!-- Draggable Header -->
+  <div class="sticky-note-header">
+    <div class="sticky-header-title">
+      <span>📌</span>
+      <span>Sticky Desk Memo · /{{ dispatch.branch.slug }}</span>
+    </div>
+    <div class="sticky-header-actions">
+      <button type="button" class="sticky-ctrl-btn" onclick="window.print()" title="Print memo as physical index card">
+        🖨 Print
+      </button>
+      <button type="button" class="sticky-ctrl-btn" onclick="closeStickyModal()" aria-label="Close sticky note" title="Close (Esc)">
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- Scrollable Sticky Body -->
+  <div class="sticky-note-body">
+    <h1 class="sticky-note-title">{{ dispatch.title }}</h1>
+
+    <div class="sticky-note-content">
+      {{ dispatch.content_html | safe }}
+    </div>
+
+    {% if dispatch.image_path %}
+      <div class="sticky-image-frame">
+        <img src="{{ dispatch.image_path }}" alt="Mounted memo photo for {{ dispatch.title }}" class="sticky-image">
+      </div>
+    {% endif %}
+
+    <div class="sticky-note-footer">
+      <div>
+        <span>Written by <strong>{{ dispatch.author.handle }}</strong></span>
+        <div style="font-size:11.5px; opacity:0.85; margin-top:2px;">
+          {{ dispatch.published_at.strftime('%b %d, %Y · %H:%M UTC') }}
+        </div>
+      </div>
+      <div class="sticky-stamp">
+        /{{ dispatch.branch.slug }}
+      </div>
+    </div>
+  </div>
+</div>

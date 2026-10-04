@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if current_branch %}/{{ current_branch.slug }} — Kotonoki{% else %}All Dispatches — Kotonoki{% endif %}
+{% endblock %}
+
+{% block breadcrumb %}
+  {% if current_branch %}/{{ current_branch.slug }}{% else %}/all{% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="feed-header">
+    <div>
+      <h1 class="feed-header-title">
+        {% if current_branch %}/{{ current_branch.slug }}{% else %}All Dispatches{% endif %}
+      </h1>
+      <div class="feed-header-meta">
+        Chronological index · Newest first
+      </div>
+    </div>
+
+    <div>
+      <a href="/write{% if current_branch %}?branch={{ current_branch.slug }}{% endif %}" class="cmd-btn cmd-btn-primary">
+        + Write Here
+      </a>
+    </div>
+  </div>
+
+  {% if dispatches %}
+    <div class="dispatch-list" id="main-dispatch-feed">
+      {% include "partials/dispatch_list.html" %}
+    </div>
+  {% else %}
+    <div class="empty-feed">
+      <div style="font-size:32px;">📄</div>
+      <div class="empty-feed-title">
+        {% if current_branch %}
+          No dispatches in /{{ current_branch.slug }} yet.
+        {% else %}
+          No dispatches published yet.
+        {% endif %}
+      </div>
+      <p class="empty-feed-desc">
+        Kotonoki is a quiet public journal where branches belong to everyone. Be the first to leave a dispatch.
+      </p>
+      <div style="margin-top:8px;">
+        <a href="/write{% if current_branch %}?branch={{ current_branch.slug }}{% endif %}" class="cmd-btn cmd-btn-primary">
+          ✍ Write First Dispatch
+        </a>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

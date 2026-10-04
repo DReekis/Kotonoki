@@ -1,0 +1,35 @@
+<div class="vote-widget" id="vote-widget-{{ dispatch.id }}">
+  {% if current_user %}
+    <button 
+      type="button"
+      class="vote-btn {% if user_vote_value == 1 %}upvoted{% endif %}"
+      hx-post="/dispatch/{{ dispatch.id }}/vote"
+      hx-vals='{"value": 1}'
+      hx-target="#vote-widget-{{ dispatch.id }}"
+      hx-swap="outerHTML"
+      title="Upvote"
+      aria-label="Upvote">
+      ▲ {{ dispatch.upvotes_count }}
+    </button>
+    <div class="vote-divider"></div>
+    <button 
+      type="button"
+      class="vote-btn {% if user_vote_value == -1 %}downvoted{% endif %}"
+      hx-post="/dispatch/{{ dispatch.id }}/vote"
+      hx-vals='{"value": -1}'
+      hx-target="#vote-widget-{{ dispatch.id }}"
+      hx-swap="outerHTML"
+      title="Downvote"
+      aria-label="Downvote">
+      ▼ {{ dispatch.downvotes_count }}
+    </button>
+  {% else %}
+    <a href="/auth?tab=login&next={{ request.path }}" class="vote-btn" title="Log in to vote">
+      ▲ {{ dispatch.upvotes_count }}
+    </a>
+    <div class="vote-divider"></div>
+    <a href="/auth?tab=login&next={{ request.path }}" class="vote-btn" title="Log in to vote">
+      ▼ {{ dispatch.downvotes_count }}
+    </a>
+  {% endif %}
+</div>

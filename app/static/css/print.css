@@ -1,0 +1,108 @@
+/* Kotonoki Print Stylesheet — Physical Memo / Index Card Print Layout */
+
+@media print {
+  /* 1. Hide all application chrome, navigation, toolbars, buttons, alerts */
+  .explorer-top-bar,
+  .command-bar,
+  .navigation-pane,
+  .nav-backdrop,
+  .flash-container,
+  .dispatch-actions,
+  .sticky-note-header,
+  .sticky-tape,
+  .vote-widget,
+  .secondary-actions,
+  .feed-header,
+  #sticky-modal-container.active {
+    display: none !important;
+  }
+
+  /* 2. Reset Body and Canvas */
+  body, html {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12pt !important;
+    line-height: 1.5 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .app-window,
+  .layout-body,
+  .content-area {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+
+  /* 3. Index Card / Physical Memo Print Layout */
+  .dispatch-card,
+  .sticky-desk-note {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    border: 1.5pt solid #333333 !important;
+    border-radius: 0 !important;
+    padding: 24pt !important;
+    margin: 18pt auto !important;
+    max-width: 5.5in !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .dispatch-title,
+  .sticky-note-title {
+    font-size: 16pt !important;
+    font-weight: bold !important;
+    color: #000000 !important;
+    border-bottom: 1pt solid #000000 !important;
+    padding-bottom: 6pt !important;
+    margin-bottom: 8pt !important;
+  }
+
+  .dispatch-meta,
+  .sticky-note-footer {
+    font-size: 9.5pt !important;
+    color: #444444 !important;
+    margin-bottom: 12pt !important;
+  }
+
+  .dispatch-content,
+  .sticky-note-content {
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+    color: #111111 !important;
+  }
+
+  .dispatch-content a,
+  .sticky-note-content a {
+    color: #000000 !important;
+    text-decoration: underline !important;
+  }
+
+  /* 4. Photo Mounting in Print */
+  .dispatch-image-container,
+  .sticky-image-frame {
+    border: 1pt solid #666666 !important;
+    box-shadow: none !important;
+    max-width: 4in !important;
+    margin: 12pt auto !important;
+    padding: 4pt !important;
+  }
+
+  .dispatch-image,
+  .sticky-image {
+    max-height: 3in !important;
+    object-fit: contain !important;
+  }
+
+  .sticky-stamp {
+    border: 1.5pt solid #000000 !important;
+    color: #000000 !important;
+  }
+}

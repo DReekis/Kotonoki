@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Rules & Common Ground — Kotonoki{% endblock %}
+
+{% block breadcrumb %}
+  <span class="crumb-current">Rules & Common Ground</span>
+{% endblock %}
+
+{% block content %}
+  <div style="max-width: 760px; margin: 0 auto; width: 100%;">
+    <div class="dispatch-card" style="padding: 32px 36px; box-shadow: var(--k-shadow-float);">
+      <header style="border-bottom: 2px solid var(--k-border-subtle); padding-bottom: 16px; margin-bottom: 24px;">
+        <h1 style="font-size: 26px; font-weight: 700; color: var(--k-primary);">
+          Rules of Common Ground
+        </h1>
+        <div style="font-size: 14px; color: var(--k-text-muted); margin-top: 4px;">
+          Preserving quiet, respectful shared public writing spaces.
+        </div>
+      </header>
+
+      <div class="dispatch-content" style="font-size: 16px; line-height: 1.75;">
+        <p>
+          Because Kotonoki does not require identity verification, we rely on clear, strict community standards to ensure branches remain peaceful and constructive spaces for everyone.
+        </p>
+
+        <h3 style="font-size: 18px; color: var(--k-primary); margin: 24px 0 12px 0;">Prohibited Content</h3>
+        <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <li><strong>Spam and Commercial Flooding:</strong> Automated posting, affiliate dumps, and SEO farming are strictly forbidden and rate-limited.</li>
+          <li><strong>Malicious Links & Phishing:</strong> Any attempt to deceive, harm, or infect readers will result in immediate removal.</li>
+          <li><strong>Harassment & Doxxing:</strong> Never publish personal identifying information (real names, addresses, phone numbers) of other people.</li>
+          <li><strong>Illegal or Dangerous Material:</strong> Dispatches containing unlawful, dangerous, or exploitative material will be struck immediately.</li>
+        </ul>
+
+        <h3 style="font-size: 18px; color: var(--k-primary); margin: 24px 0 12px 0;">Moderation & Reporting</h3>
+        <p>
+          Every dispatch includes a lightweight <strong>⚐ Report</strong> action. Anyone may flag dispatches that violate common ground rules. Reports are reviewed by site operators and actioned promptly.
+        </p>
+
+        <h3 style="font-size: 18px; color: var(--k-primary); margin: 24px 0 12px 0;">The Strike Guarantee</h3>
+        <p>
+          As an author, you retain the permanent right to <strong>Strike</strong> your own dispatch. When you strike a dispatch, the writing record is permanently expunged from the database, and any uploaded image file is immediately and synchronously unlinked from server storage.
+        </p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

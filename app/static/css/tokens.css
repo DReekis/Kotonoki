@@ -1,0 +1,63 @@
+:root {
+  /* Canvas & Surfaces */
+  --k-canvas-bg: #edf3f8;
+  --k-surface: rgba(255, 255, 255, 0.95);
+  --k-surface-alt: #f6f9fc;
+  --k-surface-glass: rgba(246, 250, 254, 0.88);
+  --k-surface-hover: #eaf1f8;
+  --k-surface-selected: #d8e6f3;
+
+  /* Explorer Borders & Accents */
+  --k-border-subtle: #cbd8e6;
+  --k-border-strong: #9fb8d0;
+  --k-border-glass: rgba(255, 255, 255, 0.7);
+  --k-focus-ring: rgba(59, 120, 194, 0.45);
+
+  /* Brand & Navigation Colors */
+  --k-primary: #234b73;
+  --k-primary-hover: #173656;
+  --k-primary-light: #e8f1fa;
+  --k-accent: #3370a6;
+
+  /* Typography Colors */
+  --k-text-main: #1e293b;
+  --k-text-muted: #576b82;
+  --k-text-faint: #8ca0b8;
+  --k-text-inverse: #ffffff;
+
+  /* Sticky Desk Physical Memo Palette */
+  --k-sticky-bg: #fef9c3;
+  --k-sticky-border: #facc15;
+  --k-sticky-header: #fef08a;
+  --k-sticky-text: #422006;
+  --k-sticky-shadow: 0 10px 25px -5px rgba(66, 32, 6, 0.15), 0 8px 10px -6px rgba(66, 32, 6, 0.1);
+
+  /* Status Colors */
+  --k-success-bg: #f0fdf4;
+  --k-success-text: #166534;
+  --k-success-border: #bbf7d0;
+  --k-error-bg: #fef2f2;
+  --k-error-text: #991b1b;
+  --k-error-border: #fecaca;
+
+  /* Radii & Shadows */
+  --k-radius-sm: 3px;
+  --k-radius-md: 5px;
+  --k-radius-lg: 8px;
+  --k-radius-full: 9999px;
+
+  --k-shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --k-shadow-card: 0 2px 6px rgba(35, 75, 115, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --k-shadow-float: 0 12px 28px rgba(23, 54, 86, 0.15), 0 4px 10px rgba(0, 0, 0, 0.08);
+
+  /* Typography */
+  --k-font-ui: -apple-system, "Segoe UI", "Segoe UI Web", Roboto, Helvetica, Arial, sans-serif;
+  --k-font-editorial: "Georgia", "Iowan Old Style", "Apple Garamond", serif;
+  --k-font-sticky: "Segoe Print", "Bradley Hand", "Caveat", cursive, sans-serif;
+  --k-font-mono: "Consolas", "Courier New", monospace;
+
+  /* App Dimensions */
+  --k-header-height: 48px;
+  --k-command-height: 42px;
+  --k-nav-pane-width: 250px;
+}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}About — Kotonoki (言の木){% endblock %}
+
+{% block breadcrumb %}
+  <span class="crumb-current">About Kotonoki</span>
+{% endblock %}
+
+{% block content %}
+  <div style="max-width: 760px; margin: 0 auto; width: 100%;">
+    <div class="dispatch-card" style="padding: 32px 36px; box-shadow: var(--k-shadow-float);">
+      <header style="border-bottom: 2px solid var(--k-border-subtle); padding-bottom: 16px; margin-bottom: 24px;">
+        <h1 style="font-size: 26px; font-weight: 700; color: var(--k-primary);">
+          Kotonoki (言の木)
+        </h1>
+        <div style="font-size: 14px; color: var(--k-text-muted); margin-top: 4px;">
+          The quiet public journal and chronological micro-publishing platform.
+        </div>
+      </header>
+
+      <div class="dispatch-content" style="font-size: 16px; line-height: 1.75;">
+        <p>
+          <strong>Kotonoki</strong> is built on a simple conviction: the internet does not need another engagement treadmill, algorithmic feed, or creator economy.
+        </p>
+
+        <p>
+          It is a space to write something down, place it into a public branch, let others discover it purely chronologically, and leave it behind.
+        </p>
+
+        <h3 style="font-size: 18px; color: var(--k-primary); margin: 24px 0 12px 0;">Our Principles</h3>
+
+        <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <li><strong>Writing comes first:</strong> The interface focuses on clear, legible text without distractions.</li>
+          <li><strong>No follower economy:</strong> You cannot follow accounts, build audiences, or chase subscriber metrics.</li>
+          <li><strong>No recommendation algorithm:</strong> All dispatches appear in pure reverse-chronological order.</li>
+          <li><strong>Self-claimed pen names:</strong> No email, phone number, or real-world identity is required.</li>
+          <li><strong>No password recovery:</strong> With zero personal data stored, losing your password means that pen name is gone forever.</li>
+          <li><strong>Public shared branches:</strong> Categories belong to everyone. Anyone can publish to <code>/cooking</code>, <code>/books</code>, or create a new branch.</li>
+          <li><strong>One image at most:</strong> Dispatches are writing documents, not image carousels or galleries.</li>
+          <li><strong>Sticky Desk:</strong> Any dispatch can be experienced as a physical memo or printed cleanly as an index card.</li>
+        </ul>
+
+        <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--k-border-subtle); font-size: 13px; color: var(--k-text-muted);">
+          Inspired by quiet desktop software and the timeless act of keeping a journal.
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

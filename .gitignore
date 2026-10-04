@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+node_modules/
+kotonoki.db
+test_uploads/
+uploads/*.webp
+.env

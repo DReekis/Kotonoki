@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} ({{ code }}) — Kotonoki{% endblock %}
+
+{% block breadcrumb %}
+  <span class="crumb-current">Error {{ code }}</span>
+{% endblock %}
+
+{% block content %}
+  <div style="max-width: 520px; margin: 40px auto; width: 100%;">
+    <div class="dispatch-card" style="text-align: center; padding: 36px 28px; box-shadow: var(--k-shadow-float);">
+      <div style="display:inline-flex; align-items:center; justify-content:center; width:52px; height:52px; border-radius:50%; background:#fee2e2; color:#dc2626; font-size:24px; font-weight:700; margin-bottom:16px;">
+        !
+      </div>
+      <h1 style="font-size: 20px; font-weight: 700; color: var(--k-primary); margin-bottom: 8px;">
+        {{ title }}
+      </h1>
+      <p style="font-size: 14px; color: var(--k-text-muted); line-height: 1.6; margin-bottom: 24px;">
+        {{ message }}
+      </p>
+      <div>
+        <a href="/" class="cmd-btn cmd-btn-primary" style="padding: 8px 18px;">
+          Return to All Dispatches
+        </a>
+      </div>
+    </div>
+  </div>
+{% endblock %}
