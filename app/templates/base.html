@@ -14,18 +14,28 @@
   <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 
-  <!-- Core Stylesheets -->
-  <link rel="stylesheet" href="/static/css/tokens.css">
-  <link rel="stylesheet" href="/static/css/explorer.css">
-  <link rel="stylesheet" href="/static/css/sticky.css">
-  <link rel="stylesheet" href="/static/css/print.css" media="print">
+  <!-- Core Stylesheets with Cache-Busting -->
+  <link rel="stylesheet" href="/static/css/tokens.css?v={{ asset_version }}">
+  <link rel="stylesheet" href="/static/css/explorer.css?v={{ asset_version }}">
+  <link rel="stylesheet" href="/static/css/sticky.css?v={{ asset_version }}">
+  <link rel="stylesheet" href="/static/css/print.css?v={{ asset_version }}" media="print">
 
   <!-- HTMX & Core App Scripts -->
-  <script src="/static/js/htmx.min.js" defer></script>
-  <script src="/static/js/app.js" defer></script>
+  <script src="/static/js/htmx.min.js?v={{ asset_version }}" defer></script>
+  <script src="/static/js/app.js?v={{ asset_version }}" defer></script>
   {% block extra_head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
+  <!-- Global Shared SVG Gradients -->
+  <svg width="0" height="0" style="position:absolute; display:none;" aria-hidden="true">
+    <defs>
+      <linearGradient id="folder-grad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ffe885"/>
+        <stop offset="100%" stop-color="#dfa82c"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
   <div class="app-window">
     
     <!-- ======================================================== -->
@@ -44,13 +54,21 @@
 
         <!-- Explorer Address Bar -->
         <nav class="address-bar" aria-label="Breadcrumb">
+          <svg class="address-folder-icon" viewBox="0 0 16 16" fill="none">
+            <path d="M1.5 4A1.5 1.5 0 013 2.5h3a1.5 1.5 0 011.06.44l1 1H13A1.5 1.5 0 0114.5 5.4v6.1A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5V4z" fill="url(#folder-grad)" stroke="#b89326" stroke-width="0.75"/>
+          </svg>
+
           <div class="crumb-segment">
             <a href="/">Kotonoki</a>
-            <span class="crumb-separator">▸</span>
+            <svg class="crumb-chevron-svg" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M1.5 1.5L6 6L1.5 10.5"/>
+            </svg>
           </div>
           <div class="crumb-segment">
             <a href="/branches">Branches</a>
-            <span class="crumb-separator">▸</span>
+            <svg class="crumb-chevron-svg" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M1.5 1.5L6 6L1.5 10.5"/>
+            </svg>
           </div>
           <div class="crumb-segment crumb-current">
             {% block breadcrumb %}/all{% endblock %}
@@ -66,7 +84,10 @@
             </a>
           {% else %}
             <a href="/auth" class="cmd-btn" title="Claim Pen Name or Log In">
-              Pen Name
+              <svg class="btn-icon-svg" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+              </svg>
+              <span>Pen Name</span>
             </a>
           {% endif %}
         </div>
@@ -76,25 +97,42 @@
       <div class="command-bar">
         <div class="command-group">
           <button id="nav-toggle-btn" class="cmd-btn nav-toggle-btn" aria-label="Toggle branches navigation">
-            📁 Branches
+            <svg class="btn-icon-svg" viewBox="0 0 16 16" fill="none">
+              <path d="M1.5 4A1.5 1.5 0 013 2.5h3a1.5 1.5 0 011.06.44l1 1H13A1.5 1.5 0 0114.5 5.4v6.1A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5V4z" fill="url(#folder-grad)" stroke="#b89326" stroke-width="0.75"/>
+            </svg>
+            <span>Branches</span>
           </button>
 
           <a href="/write" class="cmd-btn cmd-btn-primary" title="Compose a new dispatch">
-            ✍ New Dispatch
+            <svg class="btn-icon-svg" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10z"/>
+            </svg>
+            <span>New Dispatch</span>
           </a>
 
           <a href="/" class="cmd-btn {% if request.path == '/' %}cmd-btn-active{% endif %}" title="View all dispatches chronologically">
-            All Dispatches
+            <svg class="btn-icon-svg" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M2.5 3a.5.5 0 0 0 0 1h11a.5.5 0 0 0 0-1h-11zm0 3a.5.5 0 0 0 0 1h11a.5.5 0 0 0 0-1h-11zm0 3a.5.5 0 0 0 0 1h11a.5.5 0 0 0 0-1h-11zm0 3a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"/>
+            </svg>
+            <span>All Dispatches</span>
           </a>
 
           <a href="/branches" class="cmd-btn {% if request.path == '/branches' %}cmd-btn-active{% endif %}" title="Browse all public branches">
-            Browse Branches
+            <svg class="btn-icon-svg" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h3.379a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.12 4H13.5A1.5 1.5 0 0 1 15 5.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5v-9z"/>
+            </svg>
+            <span>Browse Branches</span>
           </a>
         </div>
 
         <div class="command-group cmd-secondary-group">
           {% if current_user %}
-            <a href="/desk" class="cmd-btn {% if request.path == '/desk' %}cmd-btn-active{% endif %}">My Desk</a>
+            <a href="/desk" class="cmd-btn {% if request.path == '/desk' %}cmd-btn-active{% endif %}">
+              <svg class="btn-icon-svg" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+              </svg>
+              <span>My Desk</span>
+            </a>
             <form action="/auth/logout" method="POST" style="display:inline;">
               {{ csrf_field() | safe }}
               <button type="submit" class="cmd-btn cmd-btn-quiet">Sign Out</button>
@@ -112,7 +150,7 @@
     <!-- ======================================================== -->
     <!-- DEDICATED MOBILE HEADER (Visible ONLY on Mobile < 768px)  -->
     <!-- ======================================================== -->
-    <header class="mobile-header" aria-label="Mobile Navigation Header">
+    <header class="mobile-header" style="display:none;" aria-label="Mobile Navigation Header">
       <div class="mobile-header-left">
         {% block mobile_header_left %}
           <a href="/" class="mobile-brand-link">
@@ -164,18 +202,22 @@
       <!-- Mobile / Tablet Drawer Backdrop -->
       <div id="nav-backdrop" class="nav-backdrop"></div>
 
-      <!-- Navigation Pane (Desktop Sidebar & Tablet Drawer) -->
+      <!-- Navigation Pane (Desktop Sidebar & Tablet/Mobile Drawer) -->
       <aside id="navigation-pane" class="navigation-pane" aria-label="Branches Navigation">
         <div class="nav-pane-header">
-          <div class="nav-section-title">Branches</div>
-          <button id="nav-close-btn" class="nav-close-btn" aria-label="Close navigation drawer">✕</button>
+          <div class="nav-section-title">BRANCHES</div>
+          <button id="nav-close-btn" class="nav-close-btn" style="display:none;" aria-label="Close navigation drawer">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3l10 10m0-10L3 13"/>
+            </svg>
+          </button>
         </div>
 
         <ul class="branch-tree">
           <li>
             <a href="/" class="branch-item-link {% if request.path == '/' %}active{% endif %}">
-              <svg class="branch-folder-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+              <svg class="branch-folder-icon" viewBox="0 0 16 16" fill="none">
+                <path d="M1.5 4A1.5 1.5 0 013 2.5h3a1.5 1.5 0 011.06.44l1 1H13A1.5 1.5 0 0114.5 5.4v6.1A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5V4z" fill="url(#folder-grad)" stroke="#b89326" stroke-width="0.75"/>
               </svg>
               <span>/all</span>
             </a>
@@ -183,8 +225,8 @@
           {% for b in branches %}
             <li>
               <a href="/{{ b.slug }}" class="branch-item-link {% if current_branch and current_branch.slug == b.slug %}active{% endif %}">
-                <svg class="branch-folder-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                <svg class="branch-folder-icon" viewBox="0 0 16 16" fill="none">
+                  <path d="M1.5 4A1.5 1.5 0 013 2.5h3a1.5 1.5 0 011.06.44l1 1H13A1.5 1.5 0 0114.5 5.4v6.1A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5V4z" fill="url(#folder-grad)" stroke="#b89326" stroke-width="0.75"/>
                 </svg>
                 <span>/{{ b.slug }}</span>
               </a>
@@ -192,7 +234,7 @@
           {% endfor %}
           <li>
             <a href="/branches" class="branch-item-link branch-more-link {% if request.path == '/branches' %}active{% endif %}">
-              <span>➔ View all branches</span>
+              <span>→ View all branches</span>
             </a>
           </li>
         </ul>
@@ -217,7 +259,7 @@
     <!-- ======================================================== -->
     <!-- DEDICATED MOBILE BOTTOM NAVIGATION BAR (< 768px)         -->
     <!-- ======================================================== -->
-    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+    <nav class="mobile-bottom-nav" style="display:none;" aria-label="Mobile Navigation">
       <a href="/" class="mobile-nav-item {% if request.path == '/' or (current_branch and request.path == '/' ~ current_branch.slug) %}active{% endif %}" title="Home Feed">
         <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>

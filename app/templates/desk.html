@@ -36,7 +36,12 @@
       </div>
 
       <div class="desktop-only-flex desk-header-actions">
-        <a href="/write" class="cmd-btn cmd-btn-primary">✍ New Dispatch</a>
+        <a href="/write" class="cmd-btn cmd-btn-primary">
+          <svg class="btn-icon-svg" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10z"/>
+          </svg>
+          <span>New Dispatch</span>
+        </a>
         <form action="/auth/logout" method="POST" style="display:inline;">
           {{ csrf_field() | safe }}
           <button type="submit" class="cmd-btn">Sign Out</button>
@@ -64,8 +69,14 @@
                   <span>·</span>
                   <span>{{ d.published_at.strftime('%b %d, %Y') }}</span>
                   <span>·</span>
-                  <span>▲ {{ d.upvotes_count }}  ▼ {{ d.downvotes_count }}</span>
-                  {% if d.image_path %}<span>· 📷</span>{% endif %}
+                  <span>▲ {{ d.upvotes_count }} · ▼ {{ d.downvotes_count }}</span>
+                  {% if d.image_path %}
+                    <span>·</span>
+                    <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" style="vertical-align:middle;">
+                      <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+                      <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"/>
+                    </svg>
+                  {% endif %}
                 </div>
               </div>
 
@@ -74,7 +85,10 @@
                 <form action="/dispatch/{{ d.id }}/strike" method="POST" onsubmit="return confirm('Strike this dispatch permanently? The writing and image will be deleted forever.')" style="display:inline;">
                   {{ csrf_field() | safe }}
                   <button type="submit" class="cmd-btn strike-btn" title="Permanently delete this dispatch">
-                    ✕ Strike
+                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:2px; vertical-align:middle;">
+                      <path d="M3 3l10 10m0-10L3 13"/>
+                    </svg>
+                    <span>Strike</span>
                   </button>
                 </form>
               </div>
@@ -83,7 +97,14 @@
         </div>
       {% else %}
         <div class="empty-feed" style="padding: 32px 16px;">
-          <div style="font-size: 24px;">📝</div>
+          <div class="empty-feed-icon">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--k-text-faint);">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+          </div>
           <div class="empty-feed-title" style="font-size: 15px;">You have not published any dispatches yet.</div>
           <div style="margin-top: 8px;">
             <a href="/write" class="cmd-btn cmd-btn-primary">Write your first dispatch</a>

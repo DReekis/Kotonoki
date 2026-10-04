@@ -34,7 +34,8 @@ def create_app(config_class=Config):
             "csrf_token": get_csrf_token,
             "csrf_field": csrf_field,
             "current_user": get_current_pen_name(),
-            "now_utc": datetime.now(timezone.utc)
+            "now_utc": datetime.now(timezone.utc),
+            "asset_version": "2.2"
         }
 
     # Template filters
@@ -97,6 +98,10 @@ def create_app(config_class=Config):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        if request.path.startswith("/static"):
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
         return response
 
     # Custom Error Handlers

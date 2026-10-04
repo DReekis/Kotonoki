@@ -25,8 +25,8 @@
     <!-- Overview Card / All Dispatches Primary Tile -->
     <a href="/" class="branch-card-row branch-card-all">
       <div class="branch-icon-box">
-        <svg class="branch-folder-icon" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+        <svg class="branch-folder-icon" viewBox="0 0 16 16" width="22" height="22" fill="none">
+          <path d="M1.5 4A1.5 1.5 0 013 2.5h3a1.5 1.5 0 011.06.44l1 1H13A1.5 1.5 0 0114.5 5.4v6.1A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5V4z" fill="url(#folder-grad)" stroke="#b89326" stroke-width="0.75"/>
         </svg>
       </div>
       <div class="branch-info-col">
@@ -43,8 +43,8 @@
       {% for item in branches_with_counts %}
         <a href="/{{ item.branch.slug }}" class="branch-card-row">
           <div class="branch-icon-box">
-            <svg class="branch-folder-icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+            <svg class="branch-folder-icon" viewBox="0 0 16 16" width="22" height="22" fill="none">
+              <path d="M1.5 4A1.5 1.5 0 013 2.5h3a1.5 1.5 0 011.06.44l1 1H13A1.5 1.5 0 0114.5 5.4v6.1A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5V4z" fill="url(#folder-grad)" stroke="#b89326" stroke-width="0.75"/>
             </svg>
           </div>
           <div class="branch-info-col">
@@ -57,7 +57,11 @@
         </a>
       {% else %}
         <div class="empty-feed">
-          <div style="font-size: 28px;">📁</div>
+          <div class="empty-feed-icon">
+            <svg viewBox="0 0 16 16" width="36" height="36" fill="none">
+              <path d="M1.5 4A1.5 1.5 0 013 2.5h3a1.5 1.5 0 011.06.44l1 1H13A1.5 1.5 0 0114.5 5.4v6.1A1.5 1.5 0 0113 13H3a1.5 1.5 0 01-1.5-1.5V4z" fill="url(#folder-grad)" stroke="#b89326" stroke-width="0.75"/>
+            </svg>
+          </div>
           <div class="empty-feed-title">No branches created yet</div>
           <p class="empty-feed-desc">Branches are created automatically when writing dispatches.</p>
         </div>

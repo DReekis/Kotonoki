@@ -5,15 +5,23 @@
   <!-- Header Bar (Drag handle on desktop, fixed top bar on mobile) -->
   <div class="sticky-note-header">
     <div class="sticky-header-title">
-      <span class="sticky-icon">📌</span>
+      <svg class="sticky-pin-svg" viewBox="0 0 16 16" width="14" height="14" fill="#a16207" aria-hidden="true">
+        <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.297.296-.653.49-1.004.607a7.518 7.518 0 0 1-.25.864l1.378 1.379a.5.5 0 0 1-.707.707L9.5 4.293V8.5a.5.5 0 0 1-.146.354l-2 2a.5.5 0 0 1-.708 0l-2-2A.5.5 0 0 1 4.5 8.5V4.293L3.225 5.57a.5.5 0 1 1-.707-.707l1.378-1.379c-.078-.292-.16-.583-.25-.864-.35-.117-.707-.31-.004-.607C3.342 1.174 3 .68 3 .5a.5.5 0 0 1 .5-.5h.646z"/>
+      </svg>
       <span class="sticky-header-text">Sticky Desk Memo · /{{ dispatch.branch.slug }}</span>
     </div>
     <div class="sticky-header-actions">
       <button type="button" class="sticky-ctrl-btn" onclick="window.print()" title="Print memo as physical index card" aria-label="Print memo">
-        🖨 <span class="sticky-btn-text">Print</span>
+        <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor">
+          <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+          <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 8v2a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-2H5z"/>
+        </svg>
+        <span class="sticky-btn-text">Print</span>
       </button>
       <button type="button" class="sticky-ctrl-btn sticky-close-btn" onclick="closeStickyModal()" aria-label="Close sticky note" title="Close (Esc)">
-        ✕
+        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 3l10 10m0-10L3 13"/>
+        </svg>
       </button>
     </div>
   </div>

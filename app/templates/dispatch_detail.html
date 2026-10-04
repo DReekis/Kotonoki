@@ -4,7 +4,9 @@
 
 {% block breadcrumb %}
   <a href="/{{ dispatch.branch.slug }}">/{{ dispatch.branch.slug }}</a>
-  <span class="crumb-separator">▸</span>
+  <svg class="crumb-chevron-svg" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="1.5">
+    <path d="M1.5 1.5L6 6L1.5 10.5"/>
+  </svg>
   <span class="crumb-current">{{ dispatch.title }}</span>
 {% endblock %}
 
@@ -24,7 +26,10 @@
     class="mobile-sticky-trigger" 
     onclick="openStickyModal('/dispatch/{{ dispatch.id }}/sticky')" 
     title="Open Sticky Desk memo">
-    📌 Memo
+    <svg class="action-icon-svg" viewBox="0 0 16 16" fill="currentColor" style="width:12px; height:12px; margin-right:3px;">
+      <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.297.296-.653.49-1.004.607a7.518 7.518 0 0 1-.25.864l1.378 1.379a.5.5 0 0 1-.707.707L9.5 4.293V8.5a.5.5 0 0 1-.146.354l-2 2a.5.5 0 0 1-.708 0l-2-2A.5.5 0 0 1 4.5 8.5V4.293L3.225 5.57a.5.5 0 1 1-.707-.707l1.378-1.379c-.078-.292-.16-.583-.25-.864-.35-.117-.707-.31-.004-.607C3.342 1.174 3 .68 3 .5a.5.5 0 0 1 .5-.5h.646z"/>
+    </svg>
+    <span>Memo</span>
   </button>
 {% endblock %}
 
@@ -40,9 +45,9 @@
       <h1 class="dispatch-title dispatch-detail-title">{{ dispatch.title }}</h1>
       <div class="dispatch-meta">
         <span class="pen-name">{{ dispatch.author.handle }}</span>
-        <span>·</span>
+        <span class="meta-sep">·</span>
         <a href="/{{ dispatch.branch.slug }}" class="branch-tag">/{{ dispatch.branch.slug }}</a>
-        <span>·</span>
+        <span class="meta-sep">·</span>
         <time datetime="{{ dispatch.published_at.isoformat() }}">
           {{ dispatch.published_at.strftime('%B %d, %Y · %H:%M UTC') }}
         </time>
@@ -65,25 +70,35 @@
       <div class="secondary-actions">
         <button 
           type="button" 
-          class="cmd-btn" 
+          class="action-btn-subtle" 
           onclick="openStickyModal('/dispatch/{{ dispatch.id }}/sticky')" 
           title="Open in physical Sticky Desk memo mode">
-          📌 Sticky Desk
+          <svg class="action-icon-svg" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.297.296-.653.49-1.004.607a7.518 7.518 0 0 1-.25.864l1.378 1.379a.5.5 0 0 1-.707.707L9.5 4.293V8.5a.5.5 0 0 1-.146.354l-2 2a.5.5 0 0 1-.708 0l-2-2A.5.5 0 0 1 4.5 8.5V4.293L3.225 5.57a.5.5 0 1 1-.707-.707l1.378-1.379c-.078-.292-.16-.583-.25-.864-.35-.117-.707-.31-.004-.607C3.342 1.174 3 .68 3 .5a.5.5 0 0 1 .5-.5h.646z"/>
+          </svg>
+          <span class="action-btn-text">Sticky Desk</span>
         </button>
 
         <button 
           type="button" 
-          class="cmd-btn desktop-only-inline" 
+          class="action-btn-subtle desktop-only-inline" 
           onclick="window.print()" 
           title="Print physical index card memo">
-          🖨 Print Memo
+          <svg class="action-icon-svg" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+            <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 8v2a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-2H5z"/>
+          </svg>
+          <span class="action-btn-text">Print Memo</span>
         </button>
 
         {% if current_user and current_user.id == dispatch.author_id %}
           <form action="/dispatch/{{ dispatch.id }}/strike" method="POST" onsubmit="return confirm('Strike this dispatch permanently? This cannot be undone.')" style="display:inline;">
             {{ csrf_field() | safe }}
-            <button type="submit" class="cmd-btn strike-btn" title="Permanently delete dispatch and image">
-              ✕ Strike
+            <button type="submit" class="action-btn-subtle strike-action-btn" title="Permanently delete dispatch and image">
+              <svg class="action-icon-svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M3 3l10 10m0-10L3 13"/>
+              </svg>
+              <span class="action-btn-text">Strike</span>
             </button>
           </form>
         {% else %}
@@ -92,7 +107,10 @@
             class="action-btn-subtle" 
             onclick="const r = prompt('Reason for reporting this dispatch (Spam, Harassment, Illegal, Other):', 'Spam'); if(r){ fetch('/dispatch/{{ dispatch.id }}/report', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token() }}' }, body: 'reason=' + encodeURIComponent(r) }).then(() => alert('Report submitted. Thank you.')); }"
             title="Report dispatch">
-            ⚐ Report
+            <svg class="action-icon-svg" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l-7-3.5-5 2.5V14.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 .724-.447L7 2.5l7.276-2.415a.5.5 0 0 1 .502.085z"/>
+            </svg>
+            <span class="action-btn-text">Report</span>
           </button>
         {% endif %}
       </div>
