@@ -137,24 +137,10 @@ def view_dispatch(branch_slug: str, dispatch_id: str):
     if dispatch.branch.slug != slug:
         return redirect(url_for("feed.view_dispatch", branch_slug=dispatch.branch.slug, dispatch_id=dispatch_id))
 
-    current_user = get_current_pen_name()
-    user_vote_value = 0
-    if current_user:
-        from app.models import Vote
-        v = db.session.execute(
-            db.select(Vote.value).where(
-                Vote.dispatch_id == dispatch.id,
-                Vote.author_id == current_user.id
-            )
-        ).scalar_one_or_none()
-        if v:
-            user_vote_value = v
-
     branches = BranchService.get_popular_branches(limit=30)
     return render_template(
         "dispatch_detail.html",
         dispatch=dispatch,
-        user_vote_value=user_vote_value,
         branches=branches,
         current_branch=dispatch.branch
     )

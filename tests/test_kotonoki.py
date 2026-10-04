@@ -223,9 +223,10 @@ def test_dispatch_creation_and_feed(app, test_user):
         assert dispatches[1].id == d1.id
 
 # ============================================================================
-# 6. VOTING MECHANICS TESTS
+# 6. JUDGMENT-FREE PHILOSOPHY (NO VOTES / SCORES)
 # ============================================================================
-def test_voting_lifecycle(app, test_user):
+def test_dispatches_are_judgment_free(app, test_user):
+    """Confirm dispatches exist as pure writing without social scoring or voting."""
     with app.app_context():
         user2, _ = AuthService.register("reader_two", "Password987#")
         branch, _ = BranchService.get_or_create("books")
@@ -238,21 +239,10 @@ def test_voting_lifecycle(app, test_user):
         db.session.add(dispatch)
         db.session.commit()
 
-        # Upvote from user2
-        v1 = Vote(dispatch_id=dispatch.id, author_id=user2.id, value=1)
-        db.session.add(v1)
-        dispatch.upvotes_count = 1
-        db.session.commit()
-
-        assert dispatch.score == 1
-        assert dispatch.upvotes_count == 1
-
-        # Unique constraint prevention on duplicate vote
-        with pytest.raises(Exception):
-            v_dup = Vote(dispatch_id=dispatch.id, author_id=user2.id, value=1)
-            db.session.add(v_dup)
-            db.session.commit()
-        db.session.rollback()
+        # Dispatches are pure writing: author and branch exist, no social score requirement
+        assert dispatch.title == "Book Review"
+        assert dispatch.author.handle == test_user.handle
+        assert dispatch.branch.slug == "books"
 
 # ============================================================================
 # 7. PERMANENT STRIKE (DELETION) TESTS

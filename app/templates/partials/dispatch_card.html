@@ -25,11 +25,7 @@
   {% endif %}
 
   <footer class="dispatch-actions">
-    {% set user_vote_value = viewer_votes.get(d.id, 0) if viewer_votes else 0 %}
-    {% set dispatch = d %}
-    {% include "partials/vote_widget.html" %}
-
-    <div class="secondary-actions">
+    <div class="dispatch-action-group">
       <button 
         type="button" 
         class="action-btn-subtle" 
@@ -41,6 +37,9 @@
         </svg>
         <span class="action-btn-text">Sticky Desk</span>
       </button>
+    </div>
+
+    <div class="secondary-actions">
 
       {% if current_user and current_user.id == d.author_id %}
         <form action="/dispatch/{{ d.id }}/strike" method="POST" onsubmit="return confirm('Strike this dispatch permanently? This cannot be undone.')" style="display:inline;">

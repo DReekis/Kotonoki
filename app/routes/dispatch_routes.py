@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify
 from app.extensions import db, limiter
-from app.models import Dispatch, Vote, Report, Branch
+from app.models import Dispatch, Report, Branch
 from app.services.branch_service import BranchService
 from app.services.sanitizer_service import SanitizerService
 from app.services.image_service import ImageService
@@ -64,64 +64,6 @@ def create_dispatch():
     flash("Dispatch published.", "success")
     return redirect(url_for("feed.view_dispatch", branch_slug=branch.slug, dispatch_id=dispatch.id))
 
-@dispatch_bp.route("/dispatch/<string:dispatch_id>/vote", methods=["POST"])
-@login_required
-@limiter.limit("60 per minute")
-def vote(dispatch_id: str):
-    author = get_current_pen_name()
-    dispatch = db.session.get(Dispatch, dispatch_id)
-    if not dispatch:
-        abort(404)
-
-    try:
-        vote_val = int(request.form.get("value", 0))
-    except ValueError:
-        abort(400)
-
-    if vote_val not in (1, -1):
-        abort(400)
-
-    # Check existing vote
-    existing_vote = db.session.execute(
-        db.select(Vote).where(
-            Vote.dispatch_id == dispatch.id,
-            Vote.author_id == author.id
-        )
-    ).scalar_one_or_none()
-
-    if existing_vote:
-        if existing_vote.value == vote_val:
-            # Clicking same vote removes it
-            db.session.delete(existing_vote)
-            user_vote = 0
-        else:
-            # Change vote
-            existing_vote.value = vote_val
-            user_vote = vote_val
-    else:
-        new_vote = Vote(dispatch_id=dispatch.id, author_id=author.id, value=vote_val)
-        db.session.add(new_vote)
-        user_vote = vote_val
-
-    db.session.flush()
-
-    # Recalculate vote counts directly from DB
-    upvotes = db.session.execute(
-        db.select(db.func.count(Vote.id)).where(Vote.dispatch_id == dispatch.id, Vote.value == 1)
-    ).scalar() or 0
-    downvotes = db.session.execute(
-        db.select(db.func.count(Vote.id)).where(Vote.dispatch_id == dispatch.id, Vote.value == -1)
-    ).scalar() or 0
-
-    dispatch.upvotes_count = upvotes
-    dispatch.downvotes_count = downvotes
-    db.session.commit()
-
-    return render_template(
-        "partials/vote_widget.html",
-        dispatch=dispatch,
-        user_vote_value=user_vote
-    )
 
 @dispatch_bp.route("/dispatch/<string:dispatch_id>/strike", methods=["POST"])
 @login_required

@@ -89,10 +89,11 @@ def test_full_auth_and_dispatch_workflow(client):
     assert res_sticky.status_code == 200
     assert b"Sticky Desk Memo" in res_sticky.data
 
-    # 7. Vote on dispatch
-    res_vote = client.post(f"/dispatch/{d_id}/vote", data={"value": "1"}, headers={"HX-Request": "true"})
-    assert res_vote.status_code == 200
-    assert b"1" in res_vote.data
+    # 7. Verify dispatch is judgment-free (no voting buttons or score counters)
+    res_detail = client.get(f"/tea-ceremony/{d_id}")
+    assert res_detail.status_code == 200
+    assert b"vote-btn" not in res_detail.data
+    assert b"Upvote" not in res_detail.data
 
     # 8. Report dispatch
     res_report = client.post(f"/dispatch/{d_id}/report", data={"reason": "Spam"}, headers={"HX-Request": "true"})

@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import Optional, Tuple, List, Dict, Any
 from sqlalchemy import select, and_, or_
 from app.extensions import db
-from app.models import Dispatch, Branch, Vote
+from app.models import Dispatch, Branch
 
 DEFAULT_PAGE_SIZE = 20
 
@@ -38,7 +38,7 @@ class FeedService:
     ) -> Dict[str, Any]:
         """
         Pure reverse chronological feed with keyset/cursor pagination.
-        Returns dispatches, next_cursor, and viewer vote mappings.
+        Returns dispatches and next_cursor without judgment/vote scoring.
         """
         query = select(Dispatch).order_by(Dispatch.published_at.desc(), Dispatch.id.desc())
 
@@ -70,22 +70,9 @@ class FeedService:
             last_item = items[-1]
             next_cursor = encode_cursor(last_item.published_at, last_item.id)
 
-        # Batch lookup viewer's votes on these dispatches
-        viewer_votes: Dict[str, int] = {}
-        if viewer_pen_name_id and items:
-            dispatch_ids = [d.id for d in items]
-            votes = db.session.execute(
-                select(Vote.dispatch_id, Vote.value).where(
-                    Vote.dispatch_id.in_(dispatch_ids),
-                    Vote.author_id == viewer_pen_name_id
-                )
-            ).all()
-            for did, val in votes:
-                viewer_votes[did] = val
-
         return {
             "dispatches": items,
             "next_cursor": next_cursor,
             "has_more": has_more,
-            "viewer_votes": viewer_votes
+            "viewer_votes": {}
         }

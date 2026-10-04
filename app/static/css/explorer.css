@@ -599,55 +599,10 @@ a:hover {
   font-size: 12px;
 }
 
-.vote-widget {
-  display: inline-flex;
+.dispatch-action-group {
+  display: flex;
   align-items: center;
-  background: #f1f5f9;
-  border: 1px solid var(--k-border-subtle);
-  border-radius: var(--k-radius-xs);
-  overflow: hidden;
-}
-
-.vote-btn {
-  background: transparent;
-  border: none;
-  padding: 4px 8px;
-  font-size: 11.5px;
-  cursor: pointer;
-  color: var(--k-text-muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: background 0.1s, color 0.1s;
-}
-
-.vote-btn:hover {
-  background: #e2e8f0;
-  color: var(--k-text-main);
-}
-
-.vote-btn.upvoted {
-  background: #e0f2fe;
-  color: #0284c7;
-  font-weight: 700;
-}
-
-.vote-btn.downvoted {
-  background: #fee2e2;
-  color: #dc2626;
-  font-weight: 700;
-}
-
-.vote-chevron-svg {
-  width: 10px;
-  height: 10px;
-  flex-shrink: 0;
-}
-
-.vote-divider {
-  width: 1px;
-  height: 14px;
-  background: var(--k-border-subtle);
+  gap: 8px;
 }
 
 .secondary-actions {
