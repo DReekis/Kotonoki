@@ -170,6 +170,16 @@
         });
       }
 
+      // Ensure the full area of the editor card is clickable and activates focus
+      const tiptapContainer = document.getElementById('tiptap-editor');
+      if (tiptapContainer) {
+        tiptapContainer.addEventListener('click', (e) => {
+          if (window.kotonokiEditor && (e.target === tiptapContainer || !e.target.closest('.ProseMirror'))) {
+            window.kotonokiEditor.commands.focus('end');
+          }
+        });
+      }
+
       // 2. Image Picker Wiring
       const attachBtn = document.getElementById('image-attach-btn');
       const fileInput = document.getElementById('dispatch-image-input');

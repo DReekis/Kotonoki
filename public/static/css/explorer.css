@@ -988,14 +988,66 @@ a:hover {
 }
 
 .tiptap-content-box {
-  min-height: 280px;
-  padding: 16px 20px;
-  font-family: var(--k-font-editorial);
-  font-size: 15.5px;
-  line-height: 1.7;
-  color: #24292f;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 340px;
+  background: #ffffff;
   outline: none;
   cursor: text;
+}
+
+.tiptap-content-box .ProseMirror {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 340px;
+  width: 100%;
+  padding: 18px 22px;
+  box-sizing: border-box;
+  font-family: var(--k-font-editorial);
+  font-size: 16px;
+  line-height: 1.75;
+  color: #24292f;
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: text;
+  word-break: break-word;
+}
+
+.tiptap-content-box .ProseMirror:focus,
+.tiptap-content-box .ProseMirror:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.tiptap-content-box .ProseMirror p {
+  margin: 0 0 1em 0;
+}
+
+.tiptap-content-box .ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+.tiptap-content-box .ProseMirror blockquote {
+  border-left: 3px solid var(--k-border-strong);
+  padding-left: 14px;
+  margin: 1em 0;
+  color: var(--k-text-muted);
+  font-style: italic;
+}
+
+.tiptap-content-box .ProseMirror a {
+  color: var(--k-primary);
+  text-decoration: underline;
+}
+
+.tiptap-content-box .ProseMirror mark.kotonoki-highlight {
+  background-color: #fef08a;
+  padding: 1px 3px;
+  border-radius: 2px;
 }
 
 .write-desktop-actions {
@@ -1587,8 +1639,13 @@ a:hover {
   }
 
   .tiptap-content-box {
-    min-height: 340px;
-    padding: 14px;
+    min-height: 360px;
+    padding: 0;
+  }
+
+  .tiptap-content-box .ProseMirror {
+    min-height: 360px;
+    padding: 14px 16px;
     font-size: 16px;
   }
 
