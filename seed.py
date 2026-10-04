@@ -1,14 +1,11 @@
-from app import create_app
+import datetime
 from app.extensions import db
-from app.models import PenName, Branch, Dispatch, Vote
+from app.models import Dispatch
 from app.services.auth_service import AuthService
 from app.services.branch_service import BranchService
-import datetime
 
-app = create_app()
-
-with app.app_context():
-    # Only seed if no dispatches exist
+def seed_initial_data():
+    """Seed initial dispatches if database is currently empty."""
     if db.session.execute(db.select(Dispatch)).scalar() is None:
         print("Seeding initial authentic dispatches...")
 
@@ -71,5 +68,14 @@ with app.app_context():
         db.session.add_all([d1, d2, d3])
         db.session.commit()
         print("Database seeded with initial dispatches.")
-    else:
-        print("Database already contains dispatches.")
+        return True
+    return False
+
+if __name__ == "__main__":
+    from app import create_app
+    app = create_app()
+    with app.app_context():
+        if seed_initial_data():
+            print("Done seeding.")
+        else:
+            print("Database already contains dispatches.")

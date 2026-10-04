@@ -1,0 +1,14 @@
+.git
+.gitignore
+.pytest_cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+node_modules
+tests
+test_uploads
+src_editor
+kotonoki.db
+app/kotonoki.db
+.env

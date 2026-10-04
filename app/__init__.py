@@ -12,8 +12,11 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # Ensure upload directory exists
-    Path(app.config["UPLOAD_FOLDER"]).mkdir(parents=True, exist_ok=True)
+    # Ensure upload directory exists (tolerant of read-only serverless environments)
+    try:
+        Path(app.config["UPLOAD_FOLDER"]).mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
 
     # Initialize extensions
     db.init_app(app)
