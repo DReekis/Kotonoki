@@ -6,6 +6,7 @@ from app.utils.auth_decorators import get_current_pen_name
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 @auth_bp.route("", methods=["GET"])
+@auth_bp.route("/", methods=["GET"])
 def auth_view():
     if get_current_pen_name():
         return redirect(url_for("desk.desk_view"))

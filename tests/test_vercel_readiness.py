@@ -13,7 +13,7 @@ def test_vercel_json_validity():
         
     assert "rewrites" in data or "routes" in data
     if "rewrites" in data:
-        assert any(r.get("destination") == "/api/index" for r in data["rewrites"])
+        assert any(r.get("destination", "").startswith("/api/index") for r in data["rewrites"])
 
 def test_requirements_txt_complete():
     """Ensure requirements.txt and api/requirements.txt contain all critical dependencies for Vercel."""
@@ -92,28 +92,41 @@ def test_static_mime_types_and_delivery():
 
 def test_vercel_rewrite_path_resolution():
     """Verify that VercelPathFixMiddleware maps /api/index rewrite paths to correct routes."""
+    import re
     from api.index import app
     with app.test_client() as client:
-        # Case 1: Rewrite to /api/index with x-matched-path: /
-        r_home = client.get("/api/index", headers={"x-matched-path": "/"})
+        # Case 1: Rewrite with _url_path= (Home)
+        r_home = client.get("/api/index?_url_path=")
         assert r_home.status_code == 200
         assert b"All Dispatches" in r_home.data
         assert b"Error 404" not in r_home.data
 
-        # Case 2: Rewrite to /api/index with x-matched-path: /branches
-        r_branches = client.get("/api/index", headers={"x-matched-path": "/branches"})
+        # Case 2: Rewrite with _url_path=auth&tab=register (Claim Pen Name)
+        r_auth = client.get("/api/index?_url_path=auth&tab=register")
+        assert r_auth.status_code == 200
+        assert b"Claim Pen Name" in r_auth.data
+        assert b"Error 404" not in r_auth.data
+
+        # Case 3: Rewrite with _url_path=branches
+        r_branches = client.get("/api/index?_url_path=branches")
         assert r_branches.status_code == 200
         assert b"Browse Branches" in r_branches.data or b"Branches" in r_branches.data
-        assert b"Error 404" not in r_branches.data
 
-        # Case 3: Direct /api/index hit without headers -> fallback to home
-        r_direct = client.get("/api/index")
-        assert r_direct.status_code == 200
-        assert b"All Dispatches" in r_direct.data
-        assert b"Error 404" not in r_direct.data
+        # Case 4: Rewrite with _url_path=write (Redirects unauthenticated user to login)
+        r_write = client.get("/api/index?_url_path=write")
+        assert r_write.status_code == 302
 
-        # Case 4: Subpath hit /api/index/branches -> redirect to /branches
-        r_subpath = client.get("/api/index/branches")
-        assert r_subpath.status_code in (200, 302)
+        # Case 5: POST to register a pen name via rewrite
+        import secrets
+        unique_handle = f"poet-{secrets.token_hex(4)}"
+        csrf_m = re.search(r'name="csrf_token" value="([^"]+)"', r_auth.text)
+        csrf = csrf_m.group(1) if csrf_m else ""
+        r_reg = client.post("/api/index?_url_path=auth/register", data={
+            "handle": unique_handle,
+            "password": "password123",
+            "csrf_token": csrf
+        }, follow_redirects=True)
+        assert r_reg.status_code == 200
+        assert unique_handle.encode() in r_reg.data
 
 

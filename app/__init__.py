@@ -134,28 +134,38 @@ def create_app(config_class=Config):
     def server_error(e):
         return render_template("errors/error.html", code=500, title="System Error", message="An unexpected error occurred. The system has preserved its state."), 500
 
+    import urllib.parse
+
     class VercelPathFixMiddleware:
         def __init__(self, wsgi_app):
             self.wsgi_app = wsgi_app
 
         def __call__(self, environ, start_response):
+            query_string = environ.get("QUERY_STRING", "")
+            if "_url_path" in query_string:
+                qs_dict = urllib.parse.parse_qs(query_string, keep_blank_values=True)
+                if "_url_path" in qs_dict:
+                    raw_path = qs_dict.pop("_url_path")[0]
+                    environ["QUERY_STRING"] = urllib.parse.urlencode(qs_dict, doseq=True)
+                    norm_path = raw_path if raw_path.startswith("/") else "/" + raw_path
+                    environ["PATH_INFO"] = norm_path
+                    return self.wsgi_app(environ, start_response)
+
+            # Fallback 1: Check proxy headers (if not pointing to /api/index)
             matched_path = (
-                environ.get("HTTP_X_MATCHED_PATH")
-                or environ.get("HTTP_X_FORWARDED_URI")
+                environ.get("HTTP_X_FORWARDED_URI")
                 or environ.get("HTTP_X_NOW_ROUTE_MATCHES")
             )
-            if matched_path:
-                if "?" in matched_path:
-                    path_part, query_part = matched_path.split("?", 1)
-                    environ["PATH_INFO"] = path_part
-                    if not environ.get("QUERY_STRING"):
-                        environ["QUERY_STRING"] = query_part
-                else:
-                    environ["PATH_INFO"] = matched_path
-            elif environ.get("PATH_INFO") in ("/api/index", "/api/index.py", "/api"):
+            if matched_path and not matched_path.startswith("/api/index"):
+                environ["PATH_INFO"] = matched_path.split("?")[0]
+                return self.wsgi_app(environ, start_response)
+
+            # Fallback 2: Normalize /api/index entrypoint
+            path = environ.get("PATH_INFO", "")
+            if path in ("/api/index", "/api/index.py", "/api"):
                 environ["PATH_INFO"] = "/"
-            elif environ.get("PATH_INFO", "").startswith("/api/index/"):
-                environ["PATH_INFO"] = environ["PATH_INFO"][len("/api/index"):]
+            elif path.startswith("/api/index/"):
+                environ["PATH_INFO"] = path[len("/api/index"):]
 
             return self.wsgi_app(environ, start_response)
 
