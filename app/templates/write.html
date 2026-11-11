@@ -5,219 +5,221 @@
 {% block body_class %}write-page-body{% endblock %}
 
 {% block breadcrumb %}
-<span class="crumb-current">New Dispatch</span>
+  <span class="crumb-current">New Dispatch</span>
 {% endblock %}
 
 <!-- Dedicated Mobile Header Overrides for Write Mode -->
 {% block mobile_header_left %}
-<a href="javascript:history.back()" class="mobile-back-link" title="Cancel and return">
-  ← Cancel
-</a>
+  <a href="javascript:history.back()" class="mobile-back-link" title="Cancel and return">
+    ← Cancel
+  </a>
 {% endblock %}
 
 {% block mobile_header_center %}
-<span class="mobile-context-pill">New Dispatch</span>
+  <span class="mobile-context-pill">New Dispatch</span>
 {% endblock %}
 
 {% block mobile_header_right %}
-<button type="submit" form="dispatch-write-form" class="mobile-publish-btn" id="mobile-publish-submit">
-  Publish
-</button>
+  <button type="submit" form="dispatch-write-form" class="mobile-publish-btn" id="mobile-publish-submit">
+    Publish
+  </button>
 {% endblock %}
 
 {% block extra_head %}
-<script src="/static/js/editor.bundle.js" defer></script>
+  <script src="/static/js/editor.bundle.js" defer></script>
 {% endblock %}
 
 {% block content %}
-<div class="write-desk-container">
-  <!-- Desktop Header -->
-  <div class="desktop-only-block write-view-header">
-    <div>
-      <h1 class="feed-header-title">Compose Dispatch</h1>
-      <div class="feed-header-meta">Chronological micro-publishing · One image maximum</div>
-    </div>
-  </div>
-
-  <!-- Local Draft Restoration Banner -->
-  <div id="draft-restore-banner" class="draft-banner" role="status">
-    <div class="draft-banner-text">
-      <strong>Unsaved Draft:</strong> You have an unfinished dispatch stored in your browser.
-    </div>
-    <div class="draft-banner-actions">
-      <button type="button" id="restore-draft-btn" class="cmd-btn cmd-btn-primary">Restore</button>
-      <button type="button" id="discard-draft-btn" class="cmd-btn">Discard</button>
-    </div>
-  </div>
-
-  <form id="dispatch-write-form" action="/write" method="POST" enctype="multipart/form-data"
-    class="dispatch-write-form">
-    {{ csrf_field() | safe }}
-
-    <!-- Branch Picker Bar -->
-    <div class="write-branch-row">
-      <span class="branch-prefix-label">/</span>
-      <input type="text" id="dispatch-branch-input" name="branch" class="branch-field-input"
-        placeholder="branch-name (e.g. cooking, books, midnight-thoughts)" value="{{ default_branch }}" required
-        autocomplete="off" aria-label="Public Branch Name">
+  <div class="write-desk-container">
+    <!-- Desktop Header -->
+    <div class="desktop-only-block write-view-header">
+      <div>
+        <h1 class="feed-header-title">Compose Dispatch</h1>
+        <div class="feed-header-meta">Chronological micro-publishing · One image maximum</div>
+      </div>
     </div>
 
-    <!-- Title Input -->
-    <div class="write-title-row">
-      <input type="text" id="dispatch-title-input" name="title" class="write-title-input"
-        placeholder="Title of your dispatch..." maxlength="200" required autofocus aria-label="Dispatch Title">
+    <!-- Local Draft Restoration Banner -->
+    <div id="draft-restore-banner" class="draft-banner" role="status">
+      <div class="draft-banner-text">
+        <strong>Unsaved Draft:</strong> You have an unfinished dispatch stored in your browser.
+      </div>
+      <div class="draft-banner-actions">
+        <button type="button" id="restore-draft-btn" class="cmd-btn cmd-btn-primary">Restore</button>
+        <button type="button" id="discard-draft-btn" class="cmd-btn">Discard</button>
+      </div>
     </div>
 
-    <!-- Image Selection Status Bar (Hidden file input triggered via button) -->
-    <input type="file" id="dispatch-image-input" name="image" accept="image/jpeg,image/png,image/webp"
-      style="display:none;">
+    <form id="dispatch-write-form" action="/write" method="POST" enctype="multipart/form-data" class="dispatch-write-form">
+      {{ csrf_field() | safe }}
 
-    <div id="image-preview-bar" class="image-preview-bar" style="display:none;">
-      <span class="image-preview-label">
-        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"
-          style="vertical-align:text-bottom; margin-right:4px;">
-          <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
-          <path
-            d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z" />
-        </svg>
-        Attached: <span id="image-filename"></span>
-      </span>
-      <button type="button" id="image-remove-btn" class="image-remove-btn" title="Remove image">
-        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" style="vertical-align:middle; margin-right:2px;">
-          <path d="M3 3l10 10m0-10L3 13" />
-        </svg>
-        Remove
-      </button>
-    </div>
+      <!-- Branch Picker Bar -->
+      <div class="write-branch-row">
+        <span class="branch-prefix-label">/</span>
+        <input 
+          type="text" 
+          id="dispatch-branch-input" 
+          name="branch" 
+          class="branch-field-input" 
+          placeholder="branch-name (e.g. cooking, books, midnight-thoughts)" 
+          value="{{ default_branch }}" 
+          required 
+          autocomplete="off" 
+          aria-label="Public Branch Name">
+      </div>
 
-    <!-- WordPad-Style / Mobile Fullscreen Editor Card -->
-    <div class="editor-workspace-card">
-      <!-- Integrated Formatting Toolbar -->
-      <div id="editor-toolbar" class="editor-toolbar" role="toolbar" aria-label="Rich text formatting">
-        <button type="button" class="editor-tool-btn" data-command="bold" title="Bold (Ctrl+B)"><b>B</b></button>
-        <button type="button" class="editor-tool-btn" data-command="italic" title="Italic (Ctrl+I)"><i>I</i></button>
-        <button type="button" class="editor-tool-btn" data-command="underline"
-          title="Underline (Ctrl+U)"><u>U</u></button>
-        <button type="button" class="editor-tool-btn" data-command="highlight" title="Yellow Highlight"><mark
-            class="kotonoki-highlight">abc</mark></button>
+      <!-- Title Input -->
+      <div class="write-title-row">
+        <input 
+          type="text" 
+          id="dispatch-title-input" 
+          name="title" 
+          class="write-title-input" 
+          placeholder="Title of your dispatch..." 
+          maxlength="200" 
+          required 
+          autofocus 
+          aria-label="Dispatch Title">
+      </div>
 
-        <div class="editor-tool-sep"></div>
+      <!-- Image Selection Status Bar (Hidden file input triggered via button) -->
+      <input 
+        type="file" 
+        id="dispatch-image-input" 
+        name="image" 
+        accept="image/jpeg,image/png,image/webp" 
+        style="display:none;">
 
-        <button type="button" class="editor-tool-btn" data-command="blockquote" title="Blockquote">””</button>
-        <button type="button" class="editor-tool-btn" data-command="link" title="Hyperlink">
-          <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor">
-            <path
-              d="M6.354 5.5H4a3 3 0 0 0 0 6h3a3 3 0 0 0 2.83-4H9c-.086 0-.17.01-.25.031A2 2 0 0 1 7 10.5H4a2 2 0 1 1 0-4h1.535c.218-.376.495-.714.82-1z" />
-            <path
-              d="M9 5.5a3 3 0 0 0-2.83 4H7c.086 0 .17-.01.25-.031A2 2 0 0 1 9 7.5h3a2 2 0 1 1 0 4h-1.535c-.218.376-.495.714-.82 1H12a3 3 0 1 0 0-6H9z" />
+      <div id="image-preview-bar" class="image-preview-bar" style="display:none;">
+        <span class="image-preview-label">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" style="vertical-align:text-bottom; margin-right:4px;">
+            <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+            <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"/>
           </svg>
-        </button>
-
-        <div class="editor-tool-sep"></div>
-
-        <!-- Integrated Image Button -->
-        <button type="button" id="image-attach-btn" class="editor-tool-btn image-trigger-btn"
-          title="Attach optional image">
-          <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" style="margin-right:3px;">
-            <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
-            <path
-              d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z" />
+          Attached: <span id="image-filename"></span>
+        </span>
+        <button type="button" id="image-remove-btn" class="image-remove-btn" title="Remove image">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle; margin-right:2px;">
+            <path d="M3 3l10 10m0-10L3 13"/>
           </svg>
-          <span class="image-btn-text">Image</span>
-        </button>
-
-        <div class="editor-tool-sep desktop-only-inline"></div>
-
-        <button type="button" class="editor-tool-btn desktop-only-inline" data-command="undo"
-          title="Undo (Ctrl+Z)">↺</button>
-        <button type="button" class="editor-tool-btn desktop-only-inline" data-command="redo"
-          title="Redo (Ctrl+Y)">↻</button>
-
-        <div class="editor-tool-sep"></div>
-
-        <button type="button" id="typewriter-sound-btn" class="editor-tool-btn"
-          title="Toggle Mechanical Typewriter Audio Click" aria-label="Toggle typewriter click sound"
-          style="display:inline-flex; align-items:center; gap:4px;">
-          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor">
-            <path
-              d="M11.536 14.01A8.473 8.473 0 0 0 14.026 8a8.47 8.47 0 0 0-2.49-6.01l-.708.707A7.476 7.476 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303l.708.707z" />
-            <path
-              d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.482 5.482 0 0 1 11.025 8a5.482 5.482 0 0 1-1.61 3.89l.706.706z" />
-            <path
-              d="M8.707 11.182A4.486 4.486 0 0 0 10.025 8a4.486 4.486 0 0 0-1.318-3.182L8 5.525A3.489 3.489 0 0 1 9.025 8 3.49 3.49 0 0 1 8 10.475l.707.707zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z" />
-          </svg>
-          <span id="typewriter-sound-label" style="font-size: 11px;">Sound: Off</span>
+          Remove
         </button>
       </div>
 
-      <!-- Tiptap Editor Target Area -->
-      <div id="tiptap-editor" class="tiptap-content-box" aria-label="Dispatch text body"></div>
+      <!-- WordPad-Style / Mobile Fullscreen Editor Card -->
+      <div class="editor-workspace-card">
+        <!-- Integrated Formatting Toolbar -->
+        <div id="editor-toolbar" class="editor-toolbar" role="toolbar" aria-label="Rich text formatting">
+          <button type="button" class="editor-tool-btn" data-command="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+          <button type="button" class="editor-tool-btn" data-command="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+          <button type="button" class="editor-tool-btn" data-command="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+          <button type="button" class="editor-tool-btn" data-command="highlight" title="Yellow Highlight"><mark class="kotonoki-highlight">abc</mark></button>
+          
+          <div class="editor-tool-sep"></div>
+          
+          <button type="button" class="editor-tool-btn" data-command="blockquote" title="Blockquote">””</button>
+          <button type="button" class="editor-tool-btn" data-command="link" title="Hyperlink">
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor">
+              <path d="M6.354 5.5H4a3 3 0 0 0 0 6h3a3 3 0 0 0 2.83-4H9c-.086 0-.17.01-.25.031A2 2 0 0 1 7 10.5H4a2 2 0 1 1 0-4h1.535c.218-.376.495-.714.82-1z"/>
+              <path d="M9 5.5a3 3 0 0 0-2.83 4H7c.086 0 .17-.01.25-.031A2 2 0 0 1 9 7.5h3a2 2 0 1 1 0 4h-1.535c-.218.376-.495.714-.82 1H12a3 3 0 1 0 0-6H9z"/>
+            </svg>
+          </button>
 
-      <!-- Hidden Input for Form Submission -->
-      <textarea id="dispatch-content-input" name="content_html" style="display:none;"></textarea>
-    </div>
+          <div class="editor-tool-sep"></div>
 
-    <!-- Desktop Bottom Action Row -->
-    <div class="desktop-only-flex write-desktop-actions">
-      <a href="/" class="cmd-btn">Cancel</a>
-      <button type="submit" class="cmd-btn cmd-btn-primary" style="padding:8px 24px; font-size:14px;">
-        Publish to Branch
-      </button>
-    </div>
-  </form>
-</div>
+          <!-- Integrated Image Button -->
+          <button type="button" id="image-attach-btn" class="editor-tool-btn image-trigger-btn" title="Attach optional image">
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" style="margin-right:3px;">
+              <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+              <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"/>
+            </svg>
+            <span class="image-btn-text">Image</span>
+          </button>
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // 1. Initialize Tiptap Editor
-    if (typeof window.initKotonokiEditor === 'function') {
-      window.kotonokiEditor = window.initKotonokiEditor({
-        elementId: 'tiptap-editor',
-        inputId: 'dispatch-content-input',
-        toolbarId: 'editor-toolbar'
-      });
-    }
+          <div class="editor-tool-sep desktop-only-inline"></div>
 
-    // Ensure the full area of the editor card is clickable and activates focus
-    const tiptapContainer = document.getElementById('tiptap-editor');
-    if (tiptapContainer) {
-      tiptapContainer.addEventListener('click', (e) => {
-        if (window.kotonokiEditor && (e.target === tiptapContainer || !e.target.closest('.ProseMirror'))) {
-          window.kotonokiEditor.commands.focus('end');
-        }
-      });
-    }
+          <button type="button" class="editor-tool-btn desktop-only-inline" data-command="undo" title="Undo (Ctrl+Z)">↺</button>
+          <button type="button" class="editor-tool-btn desktop-only-inline" data-command="redo" title="Redo (Ctrl+Y)">↻</button>
+          
+          <div class="editor-tool-sep"></div>
 
-    // 2. Image Picker Wiring
-    const attachBtn = document.getElementById('image-attach-btn');
-    const fileInput = document.getElementById('dispatch-image-input');
-    const previewBar = document.getElementById('image-preview-bar');
-    const filenameSpan = document.getElementById('image-filename');
-    const removeBtn = document.getElementById('image-remove-btn');
+          <button type="button" id="typewriter-sound-btn" class="editor-tool-btn" title="Toggle Mechanical Typewriter Audio Click" aria-label="Toggle typewriter click sound" style="display:inline-flex; align-items:center; gap:4px;">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor">
+              <path d="M11.536 14.01A8.473 8.473 0 0 0 14.026 8a8.47 8.47 0 0 0-2.49-6.01l-.708.707A7.476 7.476 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303l.708.707z"/>
+              <path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.482 5.482 0 0 1 11.025 8a5.482 5.482 0 0 1-1.61 3.89l.706.706z"/>
+              <path d="M8.707 11.182A4.486 4.486 0 0 0 10.025 8a4.486 4.486 0 0 0-1.318-3.182L8 5.525A3.489 3.489 0 0 1 9.025 8 3.49 3.49 0 0 1 8 10.475l.707.707zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z"/>
+            </svg>
+            <span id="typewriter-sound-label" style="font-size: 11px;">Sound: Off</span>
+          </button>
+        </div>
 
-    if (attachBtn && fileInput) {
-      attachBtn.addEventListener('click', () => fileInput.click());
-    }
+        <!-- Tiptap Editor Target Area -->
+        <div id="tiptap-editor" class="tiptap-content-box" aria-label="Dispatch text body"></div>
 
-    if (fileInput) {
-      fileInput.addEventListener('change', () => {
-        if (fileInput.files && fileInput.files[0]) {
-          const f = fileInput.files[0];
-          if (filenameSpan) filenameSpan.textContent = f.name;
-          if (previewBar) previewBar.style.display = 'flex';
-        } else {
+        <!-- Hidden Input for Form Submission -->
+        <textarea id="dispatch-content-input" name="content_html" style="display:none;"></textarea>
+      </div>
+
+      <!-- Desktop Bottom Action Row -->
+      <div class="desktop-only-flex write-desktop-actions">
+        <a href="/" class="cmd-btn">Cancel</a>
+        <button type="submit" class="cmd-btn cmd-btn-primary" style="padding:8px 24px; font-size:14px;">
+          Publish to Branch
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Initialize Tiptap Editor
+      if (typeof window.initKotonokiEditor === 'function') {
+        window.kotonokiEditor = window.initKotonokiEditor({
+          elementId: 'tiptap-editor',
+          inputId: 'dispatch-content-input',
+          toolbarId: 'editor-toolbar'
+        });
+      }
+
+      // Ensure the full area of the editor card is clickable and activates focus
+      const tiptapContainer = document.getElementById('tiptap-editor');
+      if (tiptapContainer) {
+        tiptapContainer.addEventListener('click', (e) => {
+          if (window.kotonokiEditor && (e.target === tiptapContainer || !e.target.closest('.ProseMirror'))) {
+            window.kotonokiEditor.commands.focus('end');
+          }
+        });
+      }
+
+      // 2. Image Picker Wiring
+      const attachBtn = document.getElementById('image-attach-btn');
+      const fileInput = document.getElementById('dispatch-image-input');
+      const previewBar = document.getElementById('image-preview-bar');
+      const filenameSpan = document.getElementById('image-filename');
+      const removeBtn = document.getElementById('image-remove-btn');
+
+      if (attachBtn && fileInput) {
+        attachBtn.addEventListener('click', () => fileInput.click());
+      }
+
+      if (fileInput) {
+        fileInput.addEventListener('change', () => {
+          if (fileInput.files && fileInput.files[0]) {
+            const f = fileInput.files[0];
+            if (filenameSpan) filenameSpan.textContent = f.name;
+            if (previewBar) previewBar.style.display = 'flex';
+          } else {
+            if (previewBar) previewBar.style.display = 'none';
+          }
+        });
+      }
+
+      if (removeBtn && fileInput) {
+        removeBtn.addEventListener('click', () => {
+          fileInput.value = '';
           if (previewBar) previewBar.style.display = 'none';
-        }
-      });
-    }
-
-    if (removeBtn && fileInput) {
-      removeBtn.addEventListener('click', () => {
-        fileInput.value = '';
-        if (previewBar) previewBar.style.display = 'none';
-      });
-    }
-  });
-</script>
+        });
+      }
+    });
+  </script>
 {% endblock %}
