@@ -18,8 +18,42 @@ def rules_view():
 def serve_upload(filename: str):
     # Prevent directory traversal
     safe_name = Path(filename).name
-    upload_dir = current_app.config["UPLOAD_FOLDER"]
-    return send_from_directory(upload_dir, safe_name, mimetype="image/webp")
+    upload_dir = Path(current_app.config["UPLOAD_FOLDER"])
+    disk_target = upload_dir / safe_name
+
+    # 1. Quick disk cache lookup
+    if disk_target.exists() and disk_target.is_file():
+        response = send_from_directory(str(upload_dir), safe_name, mimetype="image/webp")
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+
+    # 2. Database DispatchMedia lookup (guarantees images persist on serverless cold reboots)
+    stem = Path(safe_name).stem
+    from app.models import DispatchMedia
+    from app.extensions import db
+    media = db.session.execute(
+        db.select(DispatchMedia).where(
+            db.or_(DispatchMedia.filename == safe_name, DispatchMedia.id == stem)
+        )
+    ).scalar_one_or_none()
+
+    if media:
+        # Re-populate local container disk cache if directory is writable
+        try:
+            upload_dir.mkdir(parents=True, exist_ok=True)
+            with open(disk_target, "wb") as f:
+                f.write(media.data)
+        except Exception:
+            pass
+
+        response = Response(media.data, mimetype=media.mimetype)
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        response.headers["Content-Length"] = str(media.size_bytes)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+
+    abort(404)
 
 @static_bp.route("/manifest.json", methods=["GET"])
 def pwa_manifest():
@@ -49,14 +83,13 @@ def pwa_manifest():
 @static_bp.route("/sw.js", methods=["GET"])
 def service_worker():
     sw_code = """
-const CACHE_NAME = 'kotonoki-v3';
+const CACHE_NAME = 'kotonoki-v4';
 const STATIC_ASSETS = [
   '/',
   '/static/css/tokens.css',
   '/static/css/explorer.css',
   '/static/css/sticky.css',
   '/static/js/htmx.min.js',
-  '/static/js/editor.bundle.js',
   '/static/icons/icon-192.png'
 ];
 
@@ -79,16 +112,32 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Network first for HTML, cache first for static assets
+  // 1. Only intercept GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // 2. Only intercept same-origin requests (ignore chrome-extension, CDNs, etc.)
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // 3. Network first for HTML navigation
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
     );
     return;
   }
-  event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
-  );
+
+  // 4. Cache first for static assets, network fallback
+  if (url.pathname.startsWith('/static/')) {
+    event.respondWith(
+      caches.match(event.request).then(cached => cached || fetch(event.request))
+    );
+    return;
+  }
 });
 """
     return Response(sw_code, mimetype="application/javascript")

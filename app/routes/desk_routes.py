@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from sqlalchemy.orm import joinedload
 from app.services.auth_service import AuthService
 from app.services.branch_service import BranchService
 from app.utils.auth_decorators import login_required, get_current_pen_name
@@ -13,6 +14,7 @@ def desk_view():
     author = get_current_pen_name()
     dispatches = db.session.execute(
         db.select(Dispatch)
+        .options(joinedload(Dispatch.branch))
         .where(Dispatch.author_id == author.id)
         .order_by(Dispatch.published_at.desc())
     ).scalars().all()

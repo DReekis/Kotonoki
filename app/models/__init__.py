@@ -102,3 +102,18 @@ class Report(db.Model):
 
     def __repr__(self):
         return f"<Report {self.reason} on {self.dispatch_id}>"
+
+
+class DispatchMedia(db.Model):
+    __tablename__ = "dispatch_media"
+
+    id = db.Column(db.String(36), primary_key=True)  # UUIDv7 string (stem of filename)
+    filename = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    mimetype = db.Column(db.String(50), nullable=False, default="image/webp")
+    data = db.Column(db.LargeBinary, nullable=False)
+    size_bytes = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=utc_now, nullable=False)
+
+    def __repr__(self):
+        return f"<DispatchMedia {self.filename} ({self.size_bytes}B)>"
+

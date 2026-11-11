@@ -60,10 +60,13 @@ app = create_app()
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.wsgi_app = VercelPathFixMiddleware(app.wsgi_app)
 
-# Auto-initialize database tables and seed dispatches on cold start
+# Auto-initialize database tables and seed dispatches on cold start only when unseeded
 with app.app_context():
     try:
         db.create_all()
-        seed_initial_data()
+        from app.models import Branch
+        has_branches = db.session.execute(db.select(Branch.id).limit(1)).first() is not None
+        if not has_branches:
+            seed_initial_data()
     except Exception as e:
         print(f"Database initialization note: {e}")

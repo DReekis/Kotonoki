@@ -2,6 +2,7 @@ import base64
 from datetime import datetime, timezone
 from typing import Optional, Tuple, List, Dict, Any
 from sqlalchemy import select, and_, or_
+from sqlalchemy.orm import joinedload
 from app.extensions import db
 from app.models import Dispatch, Branch
 
@@ -40,7 +41,11 @@ class FeedService:
         Pure reverse chronological feed with keyset/cursor pagination.
         Returns dispatches and next_cursor without judgment/vote scoring.
         """
-        query = select(Dispatch).order_by(Dispatch.published_at.desc(), Dispatch.id.desc())
+        query = (
+            select(Dispatch)
+            .options(joinedload(Dispatch.branch), joinedload(Dispatch.author))
+            .order_by(Dispatch.published_at.desc(), Dispatch.id.desc())
+        )
 
         if branch_id:
             query = query.where(Dispatch.branch_id == branch_id)

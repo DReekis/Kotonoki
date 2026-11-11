@@ -77,34 +77,43 @@ class BranchService:
             branch = Branch(slug=slug)
             db.session.add(branch)
             db.session.commit()
+            cls._cached_branches = None  # Invalidate sidebar cache on new branch
 
         return branch, None
+
+    _cached_branches = None
+    _cached_branches_time = 0.0
 
     @classmethod
     def get_popular_branches(cls, limit: int = 25) -> List[Branch]:
         """
-        Return branches that have dispatches, ordered alphabetically or by recent usage.
+        Return branches ordered alphabetically.
+        Cached in-memory to prevent redundant database hits on every single page load.
         """
-        return db.session.execute(
+        import time
+        now = time.time()
+        if cls._cached_branches is not None and (now - cls._cached_branches_time < 60.0):
+            return cls._cached_branches[:limit]
+
+        branches = db.session.execute(
             db.select(Branch).order_by(Branch.slug.asc()).limit(limit)
         ).scalars().all()
+
+        cls._cached_branches = branches
+        cls._cached_branches_time = now
+        return branches
 
     @classmethod
     def get_branches_with_counts(cls) -> List[dict]:
         """
-        Return all branches along with their dispatch count for the Branches screen.
+        Return all branches along with their dispatch count using a single GROUP BY query.
         """
-        branches = db.session.execute(
-            db.select(Branch).order_by(Branch.slug.asc())
-        ).scalars().all()
-
-        results = []
-        for b in branches:
-            count = db.session.execute(
-                db.select(db.func.count(db.text("1"))).select_from(db.text("dispatches")).where(db.text("branch_id = :bid")).params(bid=b.id)
-            ).scalar() or 0
-            results.append({
-                "branch": b,
-                "count": count
-            })
-        return results
+        from app.models import Dispatch
+        stmt = (
+            db.select(Branch, db.func.count(Dispatch.id).label("dispatch_count"))
+            .outerjoin(Dispatch, Branch.id == Dispatch.branch_id)
+            .group_by(Branch.id)
+            .order_by(Branch.slug.asc())
+        )
+        rows = db.session.execute(stmt).all()
+        return [{"branch": b, "count": count} for b, count in rows]

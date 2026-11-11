@@ -69,22 +69,24 @@ class ImageService:
             unique_id = generate_uuid7()
             unique_name = f"{unique_id}.webp"
 
-            # If Cloudinary is configured (recommended for persistent Vercel storage)
+            # 1. Encode WebP into memory buffer
+            import io
+            buffer = io.BytesIO()
+            clean_img.save(
+                buffer,
+                format="WEBP",
+                quality=current_app.config.get("IMAGE_QUALITY", 82),
+                method=4
+            )
+            webp_bytes = buffer.getvalue()
+
+            # 2. If Cloudinary is configured, attempt upload
             if os.environ.get("CLOUDINARY_URL"):
                 try:
-                    import io
                     import cloudinary
                     import cloudinary.uploader
 
-                    buffer = io.BytesIO()
-                    clean_img.save(
-                        buffer,
-                        format="WEBP",
-                        quality=current_app.config.get("IMAGE_QUALITY", 82),
-                        method=4
-                    )
                     buffer.seek(0)
-
                     upload_result = cloudinary.uploader.upload(
                         buffer,
                         folder="kotonoki",
@@ -94,18 +96,32 @@ class ImageService:
                     )
                     return upload_result.get("secure_url"), None
                 except Exception as c_err:
-                    current_app.logger.warning(f"Cloudinary upload failed, falling back to local: {c_err}")
+                    current_app.logger.warning(f"Cloudinary upload failed, falling back to persistent storage: {c_err}")
 
-            # Local or /tmp storage fallback
-            destination = cls.get_upload_dir() / unique_name
+            # 3. Persistent Database Storage (DispatchMedia)
+            # Guarantees images never 404 across serverless container cold-boots or restarts
+            try:
+                from app.models import DispatchMedia
+                from app.extensions import db
+                media = DispatchMedia(
+                    id=unique_id,
+                    filename=unique_name,
+                    mimetype="image/webp",
+                    data=webp_bytes,
+                    size_bytes=len(webp_bytes)
+                )
+                db.session.add(media)
+                db.session.commit()
+            except Exception as db_err:
+                current_app.logger.warning(f"DispatchMedia database persistence note: {db_err}")
 
-            # Encode as WebP with stripped metadata
-            clean_img.save(
-                destination,
-                format="WEBP",
-                quality=current_app.config.get("IMAGE_QUALITY", 82),
-                method=4
-            )
+            # 4. Local disk write (serves as rapid local/container cache)
+            try:
+                destination = cls.get_upload_dir() / unique_name
+                with open(destination, "wb") as f:
+                    f.write(webp_bytes)
+            except Exception as disk_err:
+                current_app.logger.warning(f"Local upload disk cache write failed: {disk_err}")
 
             relative_url = f"/uploads/{unique_name}"
             return relative_url, None
@@ -118,7 +134,7 @@ class ImageService:
     @classmethod
     def delete_image_file(cls, image_path: Optional[str]) -> bool:
         """
-        Permanently remove the image file from disk or Cloudinary when a dispatch is Struck.
+        Permanently remove the image file from disk, Cloudinary, and database when a dispatch is Struck.
         """
         if not image_path:
             return True
@@ -138,12 +154,30 @@ class ImageService:
                     return False
             return True
 
+        deleted_any = False
         try:
             filename = Path(image_path).name
+            stem = Path(image_path).stem
+
+            # 1. Delete from local disk cache
             target = cls.get_upload_dir() / filename
             if target.exists() and target.is_file():
                 target.unlink()
-                return True
+                deleted_any = True
+
+            # 2. Delete from database DispatchMedia table
+            from app.models import DispatchMedia
+            from app.extensions import db
+            media_records = db.session.execute(
+                db.select(DispatchMedia).where(
+                    db.or_(DispatchMedia.filename == filename, DispatchMedia.id == stem)
+                )
+            ).scalars().all()
+            for m in media_records:
+                db.session.delete(m)
+                deleted_any = True
+
+            return True
         except Exception as e:
             current_app.logger.warning(f"Failed to delete image {image_path}: {e}")
-        return False
+            return deleted_any

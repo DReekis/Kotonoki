@@ -191,6 +191,67 @@ def test_image_processing_rejects_corrupted_file(app):
         assert rel_path is None
         assert "Invalid or corrupt" in err
 
+
+def test_persistent_image_storage_database_fallback(app, client):
+    """Verify that images persist in DispatchMedia and serve successfully even when disk cache is wiped."""
+    from werkzeug.datastructures import FileStorage
+    from app.models import DispatchMedia
+    from pathlib import Path
+
+    with app.app_context():
+        img_byte_arr = io.BytesIO()
+        test_img = Image.new("RGB", (300, 300), color=(120, 160, 200))
+        test_img.save(img_byte_arr, format="PNG")
+        img_byte_arr.seek(0)
+
+        file = FileStorage(stream=img_byte_arr, filename="fallback_test.png", content_type="image/png")
+        rel_path, err = ImageService.process_and_save(file)
+        assert err is None
+        assert rel_path is not None
+
+        # Verify record exists in DispatchMedia table
+        filename = Path(rel_path).name
+        media = db.session.execute(
+            db.select(DispatchMedia).where(DispatchMedia.filename == filename)
+        ).scalar_one_or_none()
+        assert media is not None
+        assert media.size_bytes > 0
+        assert media.mimetype == "image/webp"
+
+        # Wipe file from disk to simulate serverless container cold-boot / instance switch
+        saved_file = Path(app.config["UPLOAD_FOLDER"]) / filename
+        if saved_file.exists():
+            saved_file.unlink()
+        assert not saved_file.exists()
+
+    # Now make HTTP GET request for the image — it must restore and serve from DispatchMedia
+    resp = client.get(rel_path)
+    assert resp.status_code == 200
+    assert resp.headers.get("Content-Type") == "image/webp"
+    assert len(resp.data) == media.size_bytes
+
+    # Cleanup
+    with app.app_context():
+        ImageService.delete_image_file(rel_path)
+        media_after = db.session.execute(
+            db.select(DispatchMedia).where(DispatchMedia.filename == filename)
+        ).scalar_one_or_none()
+        assert media_after is None
+
+
+def test_css_security_and_mime_protection(app, client):
+    """Ensure CSS MIME types and CSP settings guarantee that stylesheets are never blocked."""
+    resp = client.get("/static/css/tokens.css")
+    assert resp.status_code == 200
+    assert resp.headers.get("Content-Type") == "text/css; charset=utf-8"
+    assert resp.headers.get("X-Content-Type-Options") == "nosniff"
+
+    csp = resp.headers.get("Content-Security-Policy", "")
+    # Ensure style-src allows self and unsafe-inline so page is never rendered unstyled
+    assert "style-src 'self' 'unsafe-inline'" in csp
+    assert "img-src 'self' data: https://res.cloudinary.com" in csp
+
+
 # ============================================================================
 # 5. DISPATCH CREATION & CHRONOLOGICAL FEED TESTS
 # ============================================================================
@@ -267,3 +328,46 @@ def test_dispatch_strike_permanence(app, test_user):
         # Confirm permanent expunging
         checked = db.session.get(Dispatch, dispatch_id)
         assert checked is None
+
+
+def test_branches_with_counts_group_by(app, test_user):
+    """Verify that get_branches_with_counts accurately aggregates dispatch counts in a single query."""
+    with app.app_context():
+        b1, _ = BranchService.get_or_create("alpha-topic")
+        b2, _ = BranchService.get_or_create("beta-topic")
+        b3, _ = BranchService.get_or_create("empty-topic")
+
+        d1 = Dispatch(branch_id=b1.id, author_id=test_user.id, title="A1", content_html="<p>A1</p>")
+        d2 = Dispatch(branch_id=b1.id, author_id=test_user.id, title="A2", content_html="<p>A2</p>")
+        d3 = Dispatch(branch_id=b2.id, author_id=test_user.id, title="B1", content_html="<p>B1</p>")
+        db.session.add_all([d1, d2, d3])
+        db.session.commit()
+
+        counts = BranchService.get_branches_with_counts()
+        count_map = {item["branch"].slug: item["count"] for item in counts}
+
+        assert count_map.get("alpha-topic") == 2
+        assert count_map.get("beta-topic") == 1
+        assert count_map.get("empty-topic") == 0
+
+
+def test_feed_service_eager_loading(app, test_user):
+    """Verify that FeedService returns dispatches with pre-loaded branch and author."""
+    with app.app_context():
+        branch, _ = BranchService.get_or_create("speed-branch")
+        dispatch = Dispatch(
+            branch_id=branch.id,
+            author_id=test_user.id,
+            title="Fast Dispatch",
+            content_html="<p>Pre-loaded relations</p>"
+        )
+        db.session.add(dispatch)
+        db.session.commit()
+
+        feed = FeedService.get_feed(branch_id=branch.id)
+        assert len(feed["dispatches"]) >= 1
+        item = feed["dispatches"][0]
+        # Access relationship attributes without triggering lazy SQL queries
+        assert item.branch.slug == "speed-branch"
+        assert item.author.handle == test_user.handle
+

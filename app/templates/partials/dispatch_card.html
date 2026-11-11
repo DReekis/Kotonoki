@@ -20,7 +20,7 @@
 
   {% if d.image_path %}
     <div class="dispatch-image-container">
-      <img src="{{ d.image_path }}" alt="Dispatch image for {{ d.title }}" class="dispatch-image" loading="lazy">
+      <img src="{{ d.image_path }}" alt="Dispatch image for {{ d.title }}" class="dispatch-image" loading="lazy" onerror="this.onerror=null; const c=this.closest('.dispatch-image-container'); if(c) c.style.display='none';">
     </div>
   {% endif %}
 

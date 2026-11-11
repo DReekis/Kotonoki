@@ -88,16 +88,18 @@ def create_app(config_class=Config):
     app.register_blueprint(static_bp)
     app.register_blueprint(feed_bp)  # Registered last for /<branch_slug> catch-all
 
-    # Security headers
+    # Security headers with robust CSS protection
     @app.after_request
     def set_security_headers(response):
-        # Strict CSP allowlist
+        # Strict CSP allowlist ensuring CSS, fonts, and images load reliably without blocking
         csp = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline'; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-            "font-src 'self' https://fonts.gstatic.com; "
-            "img-src 'self' data:; "
+            "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "style-src-attr 'self' 'unsafe-inline'; "
+            "font-src 'self' https://fonts.gstatic.com data:; "
+            "img-src 'self' data: https://res.cloudinary.com https://*.cloudinary.com; "
             "connect-src 'self'; "
             "frame-ancestors 'none'; "
             "base-uri 'self';"
@@ -107,6 +109,15 @@ def create_app(config_class=Config):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+
+        # Explicit MIME-type guarantee: prevents Windows registry MIME mismatches (e.g. text/plain for CSS)
+        # from triggering nosniff CSS stylesheet rejection in modern browsers
+        if request.path.endswith(".css"):
+            response.headers["Content-Type"] = "text/css; charset=utf-8"
+        elif request.path.endswith(".js"):
+            response.headers["Content-Type"] = "application/javascript; charset=utf-8"
+
         if request.path.startswith("/static"):
             response.headers["Cache-Control"] = "public, max-age=86400, stale-while-revalidate=604800"
         return response

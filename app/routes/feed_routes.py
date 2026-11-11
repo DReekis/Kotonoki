@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, abort, redirect, url_for
+from sqlalchemy.orm import joinedload
 from app.extensions import db
 from app.models import Branch, Dispatch
 from app.services.feed_service import FeedService
@@ -127,7 +128,9 @@ def view_dispatch(branch_slug: str, dispatch_id: str):
         abort(404)
 
     dispatch = db.session.execute(
-        db.select(Dispatch).where(Dispatch.id == dispatch_id)
+        db.select(Dispatch)
+        .options(joinedload(Dispatch.branch), joinedload(Dispatch.author))
+        .where(Dispatch.id == dispatch_id)
     ).scalar_one_or_none()
 
     if not dispatch:
