@@ -4,6 +4,7 @@ from app.extensions import db
 from app.models import Branch, Dispatch
 from app.services.feed_service import FeedService
 from app.services.branch_service import BranchService, RESERVED_SLUGS
+from app.services.search_service import SearchService
 from app.utils.auth_decorators import get_current_pen_name
 
 feed_bp = Blueprint("feed", __name__)
@@ -63,36 +64,46 @@ def branches_list():
 
 @feed_bp.route("/search", methods=["GET"])
 def search():
-    query = request.args.get("q", "").strip()
-    branches = BranchService.get_popular_branches(limit=30)
-    dispatches = []
+    raw_query = request.args.get("q", "").strip()
+    branch_filter = request.args.get("branch", "").strip() or None
+    sort_by = request.args.get("sort", "relevance")
+    try:
+        page = max(1, int(request.args.get("page", 1)))
+    except (ValueError, TypeError):
+        page = 1
 
-    if query:
-        search_term = f"%{query}%"
-        dispatches = db.session.execute(
-            db.select(Dispatch)
-            .options(joinedload(Dispatch.branch), joinedload(Dispatch.author))
-            .where(
-                db.or_(
-                    Dispatch.title.ilike(search_term),
-                    Dispatch.content_html.ilike(search_term)
-                )
-            )
-            .order_by(Dispatch.published_at.desc())
-            .limit(40)
-        ).scalars().all()
+    branches = BranchService.get_popular_branches(limit=30)
+    search_data = SearchService.search(
+        raw_query=raw_query,
+        filter_branch=branch_filter,
+        sort_by=sort_by,
+        page=page,
+        page_size=20
+    )
 
     if request.headers.get("HX-Request"):
         return render_template(
             "partials/search_results.html",
-            query=query,
-            dispatches=dispatches
+            query=raw_query,
+            dispatches=search_data["dispatches"],
+            has_more=search_data["has_more"],
+            page=search_data["page"],
+            parsed=search_data["parsed"],
+            target_branch=search_data["target_branch"],
+            target_author=search_data["target_author"],
+            sort_by=sort_by
         )
 
     return render_template(
         "search.html",
-        query=query,
-        dispatches=dispatches,
+        query=raw_query,
+        dispatches=search_data["dispatches"],
+        has_more=search_data["has_more"],
+        page=search_data["page"],
+        parsed=search_data["parsed"],
+        target_branch=search_data["target_branch"],
+        target_author=search_data["target_author"],
+        sort_by=sort_by,
         branches=branches,
         current_branch=None,
         active_nav="search"

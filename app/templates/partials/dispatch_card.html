@@ -15,7 +15,13 @@
   </header>
 
   <div class="dispatch-content">
-    {{ d.content_html | safe }}
+    {% if d.search_excerpt %}
+      <div class="search-match-snippet">
+        {{ d.search_excerpt | safe }}
+      </div>
+    {% else %}
+      {{ d.content_html | safe }}
+    {% endif %}
   </div>
 
   {% if d.image_path %}

@@ -1,7 +1,23 @@
 <div class="search-results-container">
-  {% if query %}
-    <div class="search-results-meta" style="margin-bottom: 16px; font-size: 13px; color: var(--k-text-muted);">
-      Found <strong>{{ dispatches | length }}</strong> dispatch{{ 'es' if dispatches | length != 1 else '' }} matching "<em>{{ query }}</em>"
+  {% if query or target_branch or target_author %}
+    <div class="search-results-meta" style="margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;">
+      <div style="font-size: 13px; color: var(--k-text-muted);">
+        Found <strong>{{ dispatches | length }}</strong> result{{ 's' if dispatches | length != 1 else '' }}
+        {% if keywords %}for "<strong>{{ keywords }}</strong>"{% endif %}
+      </div>
+
+      <div class="search-active-filters" style="display: flex; flex-wrap: wrap; gap: 6px;">
+        {% if target_branch %}
+          <span class="branch-tag" style="font-size: 11px; padding: 2px 8px;">
+            Branch: /{{ target_branch }}
+          </span>
+        {% endif %}
+        {% if target_author %}
+          <span class="branch-tag" style="font-size: 11px; padding: 2px 8px; background: #e0e7ff; color: #3730a3; border-color: #c7d2fe;">
+            Author: @{{ target_author }}
+          </span>
+        {% endif %}
+      </div>
     </div>
   {% endif %}
 
@@ -11,7 +27,30 @@
         {% include "partials/dispatch_card.html" %}
       {% endfor %}
     </div>
-  {% elif query %}
+
+    {% if page > 1 or has_more %}
+      <div class="search-pagination-bar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--k-border-subtle);">
+        {% if page > 1 %}
+          <button type="button" class="cmd-btn" hx-get="/search?q={{ query | urlencode }}&page={{ page - 1 }}&sort={{ sort_by }}" hx-target="#search-results-area" hx-indicator="#search-loading-spinner">
+            ← Previous
+          </button>
+        {% else %}
+          <span></span>
+        {% endif %}
+
+        <span style="font-size: 12px; color: var(--k-text-muted);">Page {{ page }}</span>
+
+        {% if has_more %}
+          <button type="button" class="cmd-btn" hx-get="/search?q={{ query | urlencode }}&page={{ page + 1 }}&sort={{ sort_by }}" hx-target="#search-results-area" hx-indicator="#search-loading-spinner">
+            Next →
+          </button>
+        {% else %}
+          <span></span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  {% elif query or target_branch or target_author %}
     <div class="empty-feed" style="padding: 40px 16px; text-align: center;">
       <div class="empty-feed-icon">
         <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--k-text-faint);">
@@ -19,20 +58,21 @@
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
       </div>
-      <div class="empty-feed-title" style="margin-top: 8px; font-weight: 600;">No dispatches found</div>
-      <div style="font-size: 13px; color: var(--k-text-muted); margin-top: 4px;">
-        Try searching for a different keyword or topic across branches.
+      <div class="empty-feed-title" style="margin-top: 8px; font-weight: 600;">No dispatches matched your search</div>
+      <div style="font-size: 13px; color: var(--k-text-muted); margin-top: 4px; max-width: 420px; margin-left: auto; margin-right: auto;">
+        Try using fewer keywords, checking the spelling, or removing branch/author constraints.
       </div>
     </div>
   {% else %}
     <div class="search-empty-prompt" style="text-align: center; padding: 48px 16px; color: var(--k-text-muted);">
-      <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--k-text-faint); margin-bottom: 8px;">
+      <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--k-text-faint); margin-bottom: 12px;">
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <div style="font-size: 14px; font-weight: 500;">Search through all public branches</div>
-      <div style="font-size: 12px; color: var(--k-text-faint); margin-top: 4px;">Type any title, theme, or thought above</div>
+      <div style="font-size: 15px; font-weight: 600; color: var(--k-text-main);">Search through all public branches</div>
+      <div style="font-size: 13px; color: var(--k-text-muted); margin-top: 4px;">
+        Type keywords, filter by branch with <code>/cooking</code>, or filter by author with <code>@handle</code>
+      </div>
     </div>
   {% endif %}
 </div>
-

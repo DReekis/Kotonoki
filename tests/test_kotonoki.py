@@ -438,6 +438,43 @@ def test_search_view_and_htmx_partial(app, client, test_user):
     assert b"Search through all public branches" in resp_empty.data
 
 
+def test_search_service_advanced_syntax_and_highlights(app, test_user):
+    from app.services.search_service import SearchService
+
+    # 1. Test Query Parsing
+    parsed = SearchService.parse_query("delicious /cooking @kenji ramen recipes")
+    assert parsed["branch"] == "cooking"
+    assert parsed["author"] == "kenji"
+    assert "delicious" in parsed["keywords"]
+    assert "ramen" in parsed["keywords"]
+
+    # 2. Test Highlighting
+    excerpt = SearchService.highlight_excerpt(
+        "<p>We baked artisanal sourdough bread with cracked pepper.</p>",
+        "sourdough"
+    )
+    assert '<mark class="search-match">sourdough</mark>' in excerpt
+
+    # 3. Test Scoped Search
+    with app.app_context():
+        b1, _ = BranchService.get_or_create("gardening")
+        b2, _ = BranchService.get_or_create("cooking")
+        d1 = Dispatch(branch_id=b1.id, author_id=test_user.id, title="Tomato plants", content_html="<p>Red tomatoes</p>")
+        d2 = Dispatch(branch_id=b2.id, author_id=test_user.id, title="Tomato soup", content_html="<p>Warm soup</p>")
+        db.session.add_all([d1, d2])
+        db.session.commit()
+
+        # Scoped to gardening
+        res_garden = SearchService.search("tomato", filter_branch="gardening")
+        assert len(res_garden["dispatches"]) == 1
+        assert res_garden["dispatches"][0].title == "Tomato plants"
+
+        # Scoped to author
+        res_author = SearchService.search(f"@{test_user.handle} tomato")
+        assert len(res_author["dispatches"]) == 2
+
+
+
 # ============================================================================
 # 10. JOURNAL EXPORT TESTS
 # ============================================================================
@@ -478,6 +515,69 @@ def test_desk_journal_export_zip(app, client, test_user):
         readme_content = zf.read("README.md").decode("utf-8")
         assert user_handle in readme_content
         assert "Childhood Bicycle" in readme_content
+
+
+def test_desk_property_sheet_and_zero_emojis(app, client, test_user):
+    """Ensure the Desk renders authentic property sheet tabs and zero raw emojis."""
+    import re
+    with app.app_context():
+        user_id = test_user.id
+
+    with client.session_transaction() as sess:
+        sess["pen_name_id"] = user_id
+
+    res = client.get("/desk")
+    assert res.status_code == 200
+    html = res.data.decode("utf-8")
+
+    # Verify Property Sheet Tab Navigation
+    assert "desk-tab-nav" in html
+    assert "Your Dispatches" in html
+    assert "Clipped Memos" in html
+    assert "Security & Password" in html
+    assert "desk-property-panel" in html
+
+    # Verify no raw emojis in rendered HTML
+    emoji_pattern = re.compile(r'[\U00010000-\U0010ffff\u2600-\u27bf\u2300-\u23ff\u2b50\u2b55\u2702-\u27b0]')
+    emojis = emoji_pattern.findall(html)
+    assert emojis == [], f"Found unexpected raw emojis in Desk HTML: {emojis}"
+
+
+def test_theme_system_css_tokens():
+    """Ensure CSS theme tokens cover canvas gradients, headers, commands, and surfaces for all themes."""
+    from pathlib import Path
+    tokens_path = Path("app/static/css/tokens.css")
+    assert tokens_path.exists()
+    content = tokens_path.read_text(encoding="utf-8")
+
+    # Required variables that ensure seamless theme switching across the entire viewport
+    required_vars = [
+        "--k-canvas-bg",
+        "--k-canvas-gradient",
+        "--k-header-bg",
+        "--k-command-bg",
+        "--k-surface",
+        "--k-border-subtle",
+        "--k-primary",
+        "--k-text-main"
+    ]
+
+    # Verify default :root
+    for var in required_vars:
+        assert var in content, f"Missing token {var} in tokens.css"
+
+    # Verify lamp theme definition
+    assert '[data-theme="lamp"]' in content
+    # Verify amber theme definition
+    assert '[data-theme="amber"]' in content
+
+    # Verify explorer.css consumes var(--k-canvas-gradient) on body
+    explorer_path = Path("app/static/css/explorer.css")
+    explorer_content = explorer_path.read_text(encoding="utf-8")
+    assert "background-image: var(--k-canvas-gradient);" in explorer_content
+    assert "background: var(--k-header-bg);" in explorer_content
+    assert "background: var(--k-command-bg);" in explorer_content
+
 
 
 

@@ -295,10 +295,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 9. Retro Reading Themes (Daylight -> Late-Night Lamp -> Amber CRT)
   const THEMES = ['default', 'lamp', 'amber'];
+  const THEME_ICONS = {
+    'default': '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/></svg>',
+    'lamp': '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M5.5 2A2.5 2.5 0 0 1 8 .5 2.5 2.5 0 0 1 10.5 2h2a.5.5 0 0 1 .455.707l-2 4A.5.5 0 0 1 10.5 7h-5a.5.5 0 0 1-.455-.293l-2-4A.5.5 0 0 1 3.5 2h2zM7.5 8v4H5a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H8.5V8h-1zM2 15a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V15z"/></svg>',
+    'amber': '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9.5l.5 2h2a.5.5 0 0 1 0 1h-8a.5.5 0 0 1 0-1h2l.5-2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2z"/></svg>'
+  };
   const THEME_LABELS = {
-    'default': { icon: '☼', label: 'Daylight' },
-    'lamp': { icon: '☕', label: 'Lamp' },
-    'amber': { icon: '📺', label: 'Amber CRT' }
+    'default': 'Daylight',
+    'lamp': 'Lamp',
+    'amber': 'Amber CRT'
   };
 
   window.cycleKotonokiTheme = function() {
@@ -320,11 +325,12 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function applyThemeLabels(theme) {
-    const info = THEME_LABELS[theme] || THEME_LABELS['default'];
+    const iconHtml = THEME_ICONS[theme] || THEME_ICONS['default'];
+    const labelText = THEME_LABELS[theme] || THEME_LABELS['default'];
     const iconEl = document.getElementById('theme-toggle-icon');
     const labelEl = document.getElementById('theme-toggle-label');
-    if (iconEl) iconEl.textContent = info.icon;
-    if (labelEl) labelEl.textContent = info.label;
+    if (iconEl) iconEl.innerHTML = iconHtml;
+    if (labelEl) labelEl.textContent = labelText;
   }
 
   // Initialize theme label on page load
@@ -424,13 +430,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (soundBtn) {
     if (typewriter.enabled) {
       soundBtn.classList.add('active');
-      if (soundLabel) soundLabel.textContent = '⌨ Sound: On';
+      if (soundLabel) soundLabel.textContent = 'Sound: On';
     }
 
     soundBtn.addEventListener('click', () => {
       const isNowOn = typewriter.toggle();
       soundBtn.classList.toggle('active', isNowOn);
-      if (soundLabel) soundLabel.textContent = isNowOn ? '⌨ Sound: On' : '⌨ Sound: Off';
+      if (soundLabel) soundLabel.textContent = isNowOn ? 'Sound: On' : 'Sound: Off';
     });
   }
 
@@ -453,8 +459,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Global keyboard shortcut: Ctrl+K or / (when not focused in an input) opens Search
     if ((e.ctrlKey && e.key === 'k') || (e.key === '/' && !isEditing)) {
-      if (window.location.pathname !== '/search') {
-        e.preventDefault();
+      e.preventDefault();
+      const searchPageInput = document.getElementById('search-input');
+      const headerInput = document.getElementById('global-header-search-input');
+      if (searchPageInput) {
+        searchPageInput.focus();
+        searchPageInput.select();
+      } else if (headerInput && window.innerWidth >= 768) {
+        headerInput.focus();
+        headerInput.select();
+      } else if (window.location.pathname !== '/search') {
         window.location.href = '/search';
       }
     }

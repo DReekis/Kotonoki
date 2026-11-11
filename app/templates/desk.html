@@ -3,282 +3,380 @@
 {% block title %}My Desk — Kotonoki (言の木){% endblock %}
 
 {% block breadcrumb %}
-  <span class="crumb-current">My Desk</span>
+<span class="crumb-current">My Desk</span>
 {% endblock %}
 
 {% block mobile_header_left %}
-  <a href="/" class="mobile-back-link" title="Return to feed">
-    ← Feed
-  </a>
+<a href="/" class="mobile-back-link" title="Return to feed">
+  ← Feed
+</a>
 {% endblock %}
 
 {% block mobile_header_center %}
-  <span class="mobile-context-pill">My Desk</span>
+<span class="mobile-context-pill">My Desk</span>
 {% endblock %}
 
 {% block mobile_header_right %}
-  <form action="/auth/logout" method="POST" style="display:inline;">
-    {{ csrf_field() | safe }}
-    <button type="submit" class="mobile-signout-btn">Sign Out</button>
-  </form>
+<form action="/auth/logout" method="POST" style="display:inline;">
+  {{ csrf_field() | safe }}
+  <button type="submit" class="mobile-signout-btn">Sign Out</button>
+</form>
 {% endblock %}
 
 {% block content %}
-  <div class="desk-container">
-    <!-- Desk Identity Banner -->
-    <header class="desk-header">
+<div class="desk-container">
+  <!-- Desk Identity Banner Card -->
+  <header class="desk-header">
+    <div class="desk-identity-badge">
+      <div class="desk-avatar-icon">
+        <span>{{ author.handle[0] | upper }}</span>
+      </div>
       <div class="desk-identity">
         <span class="desk-identity-label">Authenticated Pen Name</span>
         <span class="desk-handle">{{ author.handle }}</span>
         <span class="desk-meta-text">
-          Active since {{ author.created_at.strftime('%B %d, %Y') }}
+          Active since {{ author.created_at.strftime('%B %d, %Y') }} · Personal Writing Desk
         </span>
-      </div>
-
-      <div class="desktop-only-flex desk-header-actions">
-        <a href="/write" class="cmd-btn cmd-btn-primary">
-          <svg class="btn-icon-svg" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style="width:16px; height:16px; flex-shrink:0;">
-            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10z"/>
-          </svg>
-          <span>New Dispatch</span>
-        </a>
-        <form action="/desk/export" method="POST" style="display:inline;">
-          {{ csrf_field() | safe }}
-          <button type="submit" class="cmd-btn" title="Download all your dispatches as an offline Markdown archive (.zip)">
-            <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" style="vertical-align:text-bottom; margin-right:4px;">
-              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
-            </svg>
-            <span>Export Journal</span>
-          </button>
-        </form>
-        <form action="/auth/logout" method="POST" style="display:inline;">
-          {{ csrf_field() | safe }}
-          <button type="submit" class="cmd-btn">Sign Out</button>
-        </form>
-      </div>
-    </header>
-
-    <!-- Navigation Tabs: Your Dispatches vs Clipped Memos -->
-    <div class="desk-tabs-bar" style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid var(--k-border-subtle); padding-bottom: 10px;">
-      <button type="button" class="cmd-btn cmd-btn-active desk-tab-btn" id="tab-btn-dispatches" onclick="switchDeskTab('dispatches')">
-        Your Dispatches ({{ dispatches | length }})
-      </button>
-      <button type="button" class="cmd-btn desk-tab-btn" id="tab-btn-clipped" onclick="switchDeskTab('clipped')">
-        📌 Clipped Memos (<span id="clipped-count-badge">0</span>)
-      </button>
-      <div style="margin-left: auto;" class="mobile-only-block">
-        <form action="/desk/export" method="POST" style="display:inline;">
-          {{ csrf_field() | safe }}
-          <button type="submit" class="cmd-btn" style="font-size: 11px; padding: 4px 8px;">
-            Export (.zip)
-          </button>
-        </form>
       </div>
     </div>
 
-    <!-- Section A: Author's Dispatches -->
-    <section id="desk-section-dispatches" class="desk-section">
-      <div class="feed-header" style="margin-bottom: 14px;">
-        <h2 class="feed-header-title" style="font-size: 16px;">Your Dispatches ({{ dispatches | length }})</h2>
-        <span class="feed-header-meta">Manage or Strike your published writings</span>
-      </div>
-
-      {% if dispatches %}
-        <div class="desk-dispatches-list">
-          {% for d in dispatches %}
-            <div class="dispatch-card desk-dispatch-item">
-              <div class="desk-item-content">
-                <h3 class="desk-item-title">
-                  <a href="/{{ d.branch.slug }}/{{ d.id }}">{{ d.title }}</a>
-                </h3>
-                <div class="desk-item-meta">
-                  <a href="/{{ d.branch.slug }}" class="branch-tag" style="font-size: 11px;">/{{ d.branch.slug }}</a>
-                  <span>·</span>
-                  <span>{{ d.published_at.strftime('%b %d, %Y') }}</span>
-                  {% if d.image_path %}
-                    <span>·</span>
-                    <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" style="vertical-align:middle;">
-                      <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
-                      <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"/>
-                    </svg>
-                  {% endif %}
-                </div>
-              </div>
-
-              <div class="desk-item-actions">
-                <a href="/{{ d.branch.slug }}/{{ d.id }}" class="cmd-btn desk-view-btn">View</a>
-                <form action="/dispatch/{{ d.id }}/strike" method="POST" onsubmit="return confirm('Strike this dispatch permanently? The writing and image will be deleted forever.')" style="display:inline;">
-                  {{ csrf_field() | safe }}
-                  <button type="submit" class="cmd-btn strike-btn" title="Permanently delete this dispatch">
-                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:2px; vertical-align:middle;">
-                      <path d="M3 3l10 10m0-10L3 13"/>
-                    </svg>
-                    <span>Strike</span>
-                  </button>
-                </form>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="empty-feed" style="padding: 32px 16px;">
-          <div class="empty-feed-icon">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--k-text-faint);">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-            </svg>
-          </div>
-          <div class="empty-feed-title" style="font-size: 15px;">You have not published any dispatches yet.</div>
-          <div style="margin-top: 8px;">
-            <a href="/write" class="cmd-btn cmd-btn-primary">Write your first dispatch</a>
-          </div>
-        </div>
-      {% endif %}
-    </section>
-
-    <!-- Section B: Clipped Memos (Private Local Reading Binder) -->
-    <section id="desk-section-clipped" class="desk-section" style="display: none;">
-      <div class="feed-header" style="margin-bottom: 14px;">
-        <h2 class="feed-header-title" style="font-size: 16px;">Clipped Memos</h2>
-        <span class="feed-header-meta">Dispatches you've saved to your private local binder</span>
-      </div>
-
-      <div id="clipped-memos-list" class="desk-dispatches-list">
-        <!-- Rendered dynamically from localStorage via JavaScript -->
-      </div>
-
-      <div id="clipped-memos-empty" class="empty-feed" style="display: none; padding: 32px 16px;">
-        <div class="empty-feed-icon">
-          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--k-text-faint);">
-            <line x1="12" y1="17" x2="12" y2="22"></line>
-            <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+    <div class="desk-header-actions">
+      <a href="/write" class="cmd-btn cmd-btn-primary" title="Compose a new dispatch">
+        <svg class="btn-icon-svg" viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+          <path
+            d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10z" />
+        </svg>
+        <span>New Dispatch</span>
+      </a>
+      <form action="/desk/export" method="POST" style="display:inline;">
+        {{ csrf_field() | safe }}
+        <button type="submit" class="cmd-btn"
+          title="Download all your dispatches as an offline Markdown archive (.zip)">
+          <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor">
+            <path
+              d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+            <path
+              d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
           </svg>
+          <span>Export Journal</span>
+        </button>
+      </form>
+      <form action="/auth/logout" method="POST" style="display:inline;">
+        {{ csrf_field() | safe }}
+        <button type="submit" class="cmd-btn cmd-btn-quiet" title="Sign out of your pen name">Sign Out</button>
+      </form>
+    </div>
+  </header>
+
+  <!-- Windows Property Sheet Tabs Navigation -->
+  <div class="desk-tab-nav" role="tablist" aria-label="Desk Sections">
+    <button type="button" class="desk-tab-btn active" id="tab-btn-dispatches" role="tab" aria-selected="true"
+      aria-controls="desk-section-dispatches" onclick="switchDeskTab('dispatches')">
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+        <path
+          d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z" />
+      </svg>
+      <span>Your Dispatches</span>
+      <span class="desk-tab-pill">{{ dispatches | length }}</span>
+    </button>
+
+    <button type="button" class="desk-tab-btn" id="tab-btn-clipped" role="tab" aria-selected="false"
+      aria-controls="desk-section-clipped" onclick="switchDeskTab('clipped')">
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+        <path
+          d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z" />
+      </svg>
+      <span>Clipped Memos</span>
+      <span class="desk-tab-pill" id="clipped-count-badge">0</span>
+    </button>
+
+    <button type="button" class="desk-tab-btn" id="tab-btn-security" role="tab" aria-selected="false"
+      aria-controls="desk-section-security" onclick="switchDeskTab('security')">
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+        <path
+          d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.464 9.99a11.775 11.775 0 0 0 4.17 3.204c.15.068.32.104.225.104s.075-.036.225-.104a11.776 11.776 0 0 0 4.17-3.204c1.677-2.195 3.06-5.513 2.464-9.99a1.54 1.54 0 0 0-1.044-1.263 62.467 62.467 0 0 0-2.887-.87C9.843.266 8.69 0 8 0zm0 1.072c.626 0 1.706.25 2.768.536.96.26 1.95.578 2.573.782.164.053.277.21.25.38-.49 3.684-.666 6.425-2.02 8.196a10.78 10.78 0 0 1-3.571 2.748V1.072z" />
+      </svg>
+      <span>Security & Password</span>
+    </button>
+  </div>
+</div>
+
+<!-- Property Sheet Panels Body -->
+<div class="desk-property-panel">
+  <!-- Panel 1: Author's Published Dispatches -->
+  <section id="desk-section-dispatches" class="desk-section-panel" role="tabpanel" aria-labelledby="tab-btn-dispatches">
+    <div class="desk-panel-header">
+      <div>
+        <h2 class="desk-panel-title">Your Published Dispatches</h2>
+        <p class="desk-panel-subtitle">Review, browse, or strike your writings from public branches</p>
+      </div>
+      <div>
+        <a href="/write" class="cmd-btn cmd-btn-primary">
+          <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor">
+            <path
+              d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10z" />
+          </svg>
+          <span>Write</span>
+        </a>
+      </div>
+    </div>
+
+    {% if dispatches %}
+    <div class="desk-dispatches-list">
+      {% for d in dispatches %}
+      <div class="desk-item-row">
+        <div class="desk-item-main">
+          <h3 class="desk-item-title">
+            <a href="/{{ d.branch.slug }}/{{ d.id }}">{{ d.title }}</a>
+          </h3>
+          <div class="desk-item-meta">
+            <a href="/{{ d.branch.slug }}" class="branch-tag" style="font-size: 11px;">/{{ d.branch.slug }}</a>
+            <span>·</span>
+            <span>Published {{ d.published_at.strftime('%b %d, %Y') }}</span>
+            {% if d.image_path %}
+            <span>·</span>
+            <span title="Image attached" style="display: inline-flex; align-items: center; gap: 3px;">
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor">
+                <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
+                <path
+                  d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z" />
+              </svg>
+              <span>Image</span>
+            </span>
+            {% endif %}
+          </div>
         </div>
-        <div class="empty-feed-title" style="font-size: 15px;">No clipped memos yet.</div>
-        <div style="font-size: 13px; color: var(--k-text-muted); margin-top: 4px;">
-          Click the "Clip" button on any dispatch in the feed to pin it here for private reading.
+
+        <div class="desk-item-actions">
+          <a href="/{{ d.branch.slug }}/{{ d.id }}" class="cmd-btn desk-view-btn">View</a>
+          <form action="/dispatch/{{ d.id }}/strike" method="POST"
+            onsubmit="return confirm('Strike this dispatch permanently? The writing and image will be deleted forever.')"
+            style="display:inline;">
+            {{ csrf_field() | safe }}
+            <button type="submit" class="cmd-btn strike-btn" title="Permanently delete this dispatch">
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round">
+                <path d="M3 3l10 10m0-10L3 13" />
+              </svg>
+              <span>Strike</span>
+            </button>
+          </form>
         </div>
       </div>
-    </section>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-feed" style="padding: 40px 20px;">
+      <div class="empty-feed-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5"
+          stroke-linecap="round" stroke-linejoin="round" style="color:var(--k-text-faint);">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+      </div>
+      <div class="empty-feed-title">You have not published any dispatches yet.</div>
+      <div class="empty-feed-desc">Begin your personal chronicle on any branch or create a fresh branch.</div>
+      <div style="margin-top: 12px;">
+        <a href="/write" class="cmd-btn cmd-btn-primary">Write your first dispatch</a>
+      </div>
+    </div>
+    {% endif %}
+  </section>
 
-    <!-- Password Management -->
-    <section class="desk-section desk-security-card">
-      <h2 class="desk-security-title">
-        Change Pen Name Password
-      </h2>
+  <!-- Panel 2: Clipped Memos (Private Local Reading Binder) -->
+  <section id="desk-section-clipped" class="desk-section-panel" role="tabpanel" aria-labelledby="tab-btn-clipped"
+    style="display: none;">
+    <div class="desk-panel-header">
+      <div>
+        <h2 class="desk-panel-title">Clipped Memos</h2>
+        <p class="desk-panel-subtitle">Dispatches saved to your private local binder for offline reading</p>
+      </div>
+      <div style="font-size: 12px; color: var(--k-text-muted);">
+        Stored locally on this device
+      </div>
+    </div>
 
+    <div id="clipped-memos-list" class="desk-dispatches-list">
+      <!-- Rendered dynamically from localStorage via JavaScript -->
+    </div>
+
+    <div id="clipped-memos-empty" class="empty-feed" style="display: none; padding: 40px 20px;">
+      <div class="empty-feed-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5"
+          stroke-linecap="round" stroke-linejoin="round" style="color:var(--k-text-faint);">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
+        {% endif %}
+      </div>
+      <div class="empty-feed-title">No clipped memos in your binder yet.</div>
+      <div class="empty-feed-desc">
+        Click the "Clip" button on any dispatch in the feed to save it here for quiet private reading.
+      </div>
+      <div style="margin-top: 12px;">
+        <a href="/" class="cmd-btn">Browse Dispatches</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Panel 3: Pen Name Security & Password Management -->
+  <section id="desk-section-security" class="desk-section-panel" role="tabpanel" aria-labelledby="tab-btn-security"
+    style="display: none;">
+    <div class="desk-panel-header">
+      <div>
+        <h2 class="desk-panel-title">Change Pen Name Password</h2>
+        <p class="desk-panel-subtitle">Update your secret passphrase to protect your writings and identity</p>
+      </div>
+    </div>
+
+    <div class="desk-security-panel">
       <form action="/desk/change-password" method="POST">
         {{ csrf_field() | safe }}
 
         <div class="form-group">
           <label for="old_password" class="form-label">Current Password</label>
-          <input type="password" id="old_password" name="old_password" class="form-input" required autocomplete="current-password">
+          <input type="password" id="old_password" name="old_password" class="form-input" required
+            autocomplete="current-password" placeholder="Enter current passphrase">
         </div>
 
         <div class="form-group">
           <label for="new_password" class="form-label">New Password</label>
-          <input type="password" id="new_password" name="new_password" class="form-input" minlength="8" required autocomplete="new-password">
+          <input type="password" id="new_password" name="new_password" class="form-input" minlength="8" required
+            autocomplete="new-password" placeholder="At least 8 characters">
+          <span class="form-help">Must be at least 8 characters. Choose something secure you won't forget.</span>
         </div>
 
         <div class="form-group">
           <label for="confirm_password" class="form-label">Confirm New Password</label>
-          <input type="password" id="confirm_password" name="confirm_password" class="form-input" minlength="8" required autocomplete="new-password">
+          <input type="password" id="confirm_password" name="confirm_password" class="form-input" minlength="8" required
+            autocomplete="new-password" placeholder="Re-type new passphrase">
         </div>
 
-        <button type="submit" class="cmd-btn cmd-btn-primary" style="margin-top: 6px; padding: 8px 18px;">
-          Update Password
-        </button>
+        <div style="margin-top: 18px;">
+          <button type="submit" class="cmd-btn cmd-btn-primary" style="padding: 7px 20px;">
+            Update Password
+          </button>
+        </div>
       </form>
-    </section>
-  </div>
+    </div>
+  </section>
+</div>
+</div>
 
-  <script>
-    function switchDeskTab(tab) {
-      const secDispatches = document.getElementById('desk-section-dispatches');
-      const secClipped = document.getElementById('desk-section-clipped');
-      const btnDispatches = document.getElementById('tab-btn-dispatches');
-      const btnClipped = document.getElementById('tab-btn-clipped');
-
-      if (tab === 'clipped') {
-        if (secDispatches) secDispatches.style.display = 'none';
-        if (secClipped) secClipped.style.display = 'block';
-        if (btnDispatches) btnDispatches.classList.remove('cmd-btn-active');
-        if (btnClipped) btnClipped.classList.add('cmd-btn-active');
-        renderClippedMemos();
+<script>
+  function switchDeskTab(tab) {
+    const tabs = ['dispatches', 'clipped', 'security'];
+    tabs.forEach(t => {
+      const sec = document.getElementById('desk-section-' + t);
+      const btn = document.getElementById('tab-btn-' + t);
+      if (t === tab) {
+        if (sec) sec.style.display = 'block';
+        if (btn) {
+          btn.classList.add('active');
+          btn.setAttribute('aria-selected', 'true');
+        }
       } else {
-        if (secDispatches) secDispatches.style.display = 'block';
-        if (secClipped) secClipped.style.display = 'none';
-        if (btnDispatches) btnDispatches.classList.add('cmd-btn-active');
-        if (btnClipped) btnClipped.classList.remove('cmd-btn-active');
+        if (sec) sec.style.display = 'none';
+        if (btn) {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-selected', 'false');
+        }
       }
+    });
+
+    if (tab === 'clipped') {
+      renderClippedMemos();
     }
 
-    function renderClippedMemos() {
-      const list = document.getElementById('clipped-memos-list');
-      const empty = document.getElementById('clipped-memos-empty');
-      const badge = document.getElementById('clipped-count-badge');
-      if (!list) return;
+    if (history.replaceState) {
+      history.replaceState(null, '', '#' + tab);
+    }
+  }
+  }
 
-      let memos = [];
-      try {
-        memos = JSON.parse(localStorage.getItem('kotonoki_clipped_memos') || '[]');
-      } catch (e) {
-        memos = [];
-      }
+  function renderClippedMemos() {
+    const list = document.getElementById('clipped-memos-list');
+    const empty = document.getElementById('clipped-memos-empty');
+    const badge = document.getElementById('clipped-count-badge');
+    if (!list) return;
 
-      if (badge) badge.textContent = memos.length;
+    let memos = [];
+    try {
+      memos = JSON.parse(localStorage.getItem('kotonoki_clipped_memos') || '[]');
+    } catch (e) {
+      memos = [];
+    }
 
-      if (!memos.length) {
-        list.innerHTML = '';
-        if (empty) empty.style.display = 'block';
-        return;
-      }
+    if (badge) badge.textContent = memos.length;
 
-      if (empty) empty.style.display = 'none';
-      list.innerHTML = memos.map(m => `
-        <div class="dispatch-card desk-dispatch-item" id="clipped-${m.id}">
-          <div class="desk-item-content">
+    if (!memos.length) {
+      list.innerHTML = '';
+      if (empty) empty.style.display = 'block';
+      return;
+    }
+
+    if (empty) empty.style.display = 'none';
+    list.innerHTML = memos.map(m => `
+        <div class="desk-item-row" id="clipped-${m.id}">
+          <div class="desk-item-main">
             <h3 class="desk-item-title">
-              <a href="/${m.branch}/${m.id}">${m.title}</a>
+              <a href="/${escapeHtml(m.branch)}/${escapeHtml(m.id)}">${escapeHtml(m.title)}</a>
             </h3>
             <div class="desk-item-meta">
-              <a href="/${m.branch}" class="branch-tag" style="font-size: 11px;">/${m.branch}</a>
+              <a href="/${escapeHtml(m.branch)}" class="branch-tag" style="font-size: 11px;">/${escapeHtml(m.branch)}</a>
               <span>·</span>
-              <span>by ${m.author}</span>
+              <span>by ${escapeHtml(m.author)}</span>
               <span>·</span>
-              <span>Saved ${m.date || 'recently'}</span>
+              <span>Saved ${escapeHtml(m.date || 'recently')}</span>
             </div>
           </div>
           <div class="desk-item-actions">
-            <a href="/${m.branch}/${m.id}" class="cmd-btn desk-view-btn">Read</a>
-            <button type="button" class="cmd-btn strike-btn" onclick="unclipMemo('${m.id}')" title="Remove from binder">
-              Unclip
+            <a href="/${escapeHtml(m.branch)}/${escapeHtml(m.id)}" class="cmd-btn desk-view-btn">Read</a>
+            <button type="button" class="cmd-btn strike-btn" onclick="unclipMemo('${escapeHtml(m.id)}')" title="Remove from binder">
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M3 3l10 10m0-10L3 13"/>
+              </svg>
+              <span>Unclip</span>
             </button>
           </div>
         </div>
       `).join('');
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function unclipMemo(id) {
+    try {
+      let memos = JSON.parse(localStorage.getItem('kotonoki_clipped_memos') || '[]');
+      memos = memos.filter(m => m.id !== id);
+      localStorage.setItem('kotonoki_clipped_memos', JSON.stringify(memos));
+      renderClippedMemos();
+      if (window.updateAllClipButtons) window.updateAllClipButtons();
+    } catch (e) { }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Check initial hash (e.g. #clipped or #security)
+    const hash = window.location.hash.replace('#', '');
+    if (hash === 'clipped' || hash === 'security') {
+      switchDeskTab(hash);
     }
 
-    function unclipMemo(id) {
-      try {
-        let memos = JSON.parse(localStorage.getItem('kotonoki_clipped_memos') || '[]');
-        memos = memos.filter(m => m.id !== id);
-        localStorage.setItem('kotonoki_clipped_memos', JSON.stringify(memos));
-        renderClippedMemos();
-        if (window.updateAllClipButtons) window.updateAllClipButtons();
-      } catch (e) {}
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      // Initialize badge count
-      try {
-        const memos = JSON.parse(localStorage.getItem('kotonoki_clipped_memos') || '[]');
-        const badge = document.getElementById('clipped-count-badge');
-        if (badge) badge.textContent = memos.length;
-      } catch (e) {}
-    });
-  </script>
+    // Initialize badge count
+    try {
+      const memos = JSON.parse(localStorage.getItem('kotonoki_clipped_memos') || '[]');
+      const badge = document.getElementById('clipped-count-badge');
+      if (badge) badge.textContent = memos.length;
+    } catch (e) { }
+  });
+</script>
 {% endblock %}

@@ -23,7 +23,7 @@ body {
   line-height: 1.5;
   color: var(--k-text-main);
   background-color: var(--k-canvas-bg);
-  background-image: linear-gradient(180deg, #edf3f8 0%, #e2ecf5 100%);
+  background-image: var(--k-canvas-gradient);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -67,6 +67,7 @@ a:hover {
 .mobile-header,
 .mobile-bottom-nav,
 .mobile-branch-chips-scroller,
+.mobile-only-block,
 .nav-close-btn,
 .nav-backdrop {
   display: none !important;
@@ -86,7 +87,7 @@ a:hover {
 
 /* Top Explorer Address / Breadcrumb Bar */
 .explorer-top-bar {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 246, 252, 0.96) 100%);
+  background: var(--k-header-bg);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--k-border-subtle);
   height: var(--k-desktop-header-h);
@@ -147,8 +148,8 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #ffffff;
-  border: 1px solid #b0c4de;
+  background: var(--k-address-bg);
+  border: 1px solid var(--k-address-border);
   border-radius: var(--k-radius-xs);
   height: 26px;
   padding: 0 10px;
@@ -222,7 +223,7 @@ a:hover {
 
 /* Command Bar (Explorer Toolbar) */
 .command-bar {
-  background: linear-gradient(180deg, #f7fafc 0%, #edf2f7 100%);
+  background: var(--k-command-bg);
   border-bottom: 1px solid var(--k-border-subtle);
   height: var(--k-desktop-command-h);
   display: flex;
@@ -240,8 +241,8 @@ a:hover {
 
 /* Windows 7 Command Button Styling */
 .cmd-btn {
-  background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%);
-  border: 1px solid var(--k-border-strong);
+  background: var(--k-cmd-btn-bg);
+  border: 1px solid var(--k-cmd-btn-border);
   border-radius: var(--k-radius-xs);
   padding: 3px 10px;
   font-size: 12px;
@@ -259,33 +260,33 @@ a:hover {
 }
 
 .cmd-btn:hover {
-  background: linear-gradient(180deg, #eef5fc 0%, #d8e6f3 100%);
-  border-color: #7099be;
+  background: var(--k-cmd-btn-hover);
+  border-color: var(--k-border-strong);
   color: var(--k-primary);
   text-decoration: none;
   box-shadow: 0 1px 2px rgba(35, 75, 115, 0.12);
 }
 
 .cmd-btn:active {
-  background: #cce2f5;
-  border-color: #3370a6;
+  background: var(--k-cmd-btn-active);
+  border-color: var(--k-primary);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .cmd-btn-primary {
-  border-color: #7ba2c7;
+  border-color: var(--k-cmd-btn-primary-border);
   font-weight: 600;
-  color: var(--k-primary);
-  background: linear-gradient(180deg, #f0f7ff 0%, #dcecfb 100%);
+  color: var(--k-cmd-btn-primary-text);
+  background: var(--k-cmd-btn-primary-bg);
 }
 .cmd-btn-primary:hover {
-  background: linear-gradient(180deg, #e2f0fd 0%, #cce4fa 100%);
-  border-color: #558bbb;
+  background: var(--k-cmd-btn-hover);
+  border-color: var(--k-primary);
 }
 
 .cmd-btn-active {
-  background: #e2ecf5;
-  border-color: #7099be;
+  background: var(--k-surface-selected);
+  border-color: var(--k-border-strong);
   color: var(--k-primary);
   font-weight: 600;
 }
@@ -322,7 +323,7 @@ a:hover {
 .navigation-pane {
   width: var(--k-desktop-nav-w);
   border-right: 1px solid var(--k-border-subtle);
-  background: rgba(246, 250, 254, 0.75);
+  background: var(--k-surface-glass);
   padding: 14px 10px;
   display: flex;
   flex-direction: column;
@@ -1013,7 +1014,7 @@ a:hover {
 }
 
 /* ==========================================================================
-   8. MY DESK & AUTH WORKSPACES
+   8. MY DESK & AUTH WORKSPACES (Aero Explorer Property Sheet System)
    ========================================================================== */
 .desk-container {
   display: flex;
@@ -1022,6 +1023,7 @@ a:hover {
   width: 100%;
 }
 
+/* Desk Account Banner Card */
 .desk-header {
   background: var(--k-surface);
   border: 1px solid var(--k-border-subtle);
@@ -1030,12 +1032,35 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
+  box-shadow: var(--k-shadow-card);
+}
+
+.desk-identity-badge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.desk-avatar-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--k-radius-xs);
+  background: linear-gradient(135deg, var(--k-primary) 0%, var(--k-accent) 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
 }
 
 .desk-identity {
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
 .desk-identity-label {
@@ -1043,13 +1068,14 @@ a:hover {
   font-weight: 700;
   color: var(--k-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
 .desk-handle {
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--k-primary);
+  line-height: 1.25;
 }
 
 .desk-meta-text {
@@ -1057,41 +1083,174 @@ a:hover {
   color: var(--k-text-muted);
 }
 
+.desk-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Authentic Windows Explorer Property Sheet Tabs */
+.desk-tab-nav {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  border-bottom: 1px solid var(--k-border-subtle);
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+.desk-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--k-text-muted);
+  background: var(--k-tab-inactive-bg);
+  border: 1px solid var(--k-tab-inactive-border);
+  border-bottom: none;
+  border-top-left-radius: var(--k-radius-sm);
+  border-top-right-radius: var(--k-radius-sm);
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: all 0.12s ease;
+  user-select: none;
+  text-decoration: none;
+}
+
+.desk-tab-btn:hover {
+  background: var(--k-surface-hover);
+  color: var(--k-primary);
+  text-decoration: none;
+}
+
+.desk-tab-btn.active {
+  background: var(--k-surface);
+  color: var(--k-primary);
+  font-weight: 600;
+  border-color: var(--k-border-subtle);
+  border-top: 3px solid var(--k-primary);
+  border-bottom: 1px solid var(--k-surface);
+  z-index: 2;
+}
+
+.desk-tab-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--k-surface-selected);
+  color: var(--k-primary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: var(--k-radius-full);
+}
+
+.desk-tab-btn.active .desk-tab-pill {
+  background: var(--k-primary);
+  color: var(--k-text-inverse);
+}
+
+/* Desk Property Panel Container */
+.desk-property-panel {
+  background: var(--k-surface);
+  border: 1px solid var(--k-border-subtle);
+  border-radius: 0 var(--k-radius-sm) var(--k-radius-sm) var(--k-radius-sm);
+  box-shadow: var(--k-shadow-card);
+  padding: 22px 24px;
+  min-height: 340px;
+}
+
+.desk-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--k-border-subtle);
+  gap: 12px;
+}
+
+.desk-panel-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--k-primary);
+  margin: 0;
+}
+
+.desk-panel-subtitle {
+  font-size: 12px;
+  color: var(--k-text-muted);
+  margin-top: 2px;
+}
+
+/* Desk Dispatches & Clipped Memos Row Items */
 .desk-dispatches-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
 }
 
-.desk-dispatch-item {
+.desk-dispatch-item,
+.desk-item-row {
+  background: var(--k-surface);
+  border: 1px solid var(--k-border-subtle);
+  border-radius: var(--k-radius-xs);
   padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
+  transition: all 0.12s ease;
+  box-shadow: var(--k-shadow-subtle);
 }
 
-.desk-item-content {
+.desk-dispatch-item:hover,
+.desk-item-row:hover {
+  border-color: var(--k-border-strong);
+  background: var(--k-surface-alt);
+  box-shadow: var(--k-shadow-card);
+}
+
+.desk-item-content,
+.desk-item-main {
   flex: 1;
   min-width: 0;
+  text-align: left;
 }
 
 .desk-item-title {
   font-size: 15px;
   font-weight: 600;
+  color: var(--k-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: left;
+  margin-bottom: 4px;
+}
+
+.desk-item-title a {
+  color: var(--k-primary);
+  text-decoration: none;
+}
+
+.desk-item-title a:hover {
+  color: var(--k-accent);
+  text-decoration: underline;
 }
 
 .desk-item-meta {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--k-text-muted);
-  margin-top: 2px;
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+  text-align: left;
 }
 
 .desk-item-actions {
@@ -1099,6 +1258,7 @@ a:hover {
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
+  margin-left: 8px;
 }
 
 .strike-btn {
@@ -1111,19 +1271,24 @@ a:hover {
   color: #991b1b;
 }
 
-.desk-security-card {
-  background: var(--k-surface);
-  border: 1px solid var(--k-border-subtle);
-  border-radius: var(--k-radius-sm);
-  padding: 18px 20px;
-  max-width: 440px;
+/* Desk Security & Password Panel */
+.desk-security-panel {
+  max-width: 480px;
+  margin: 8px 0;
+  text-align: left;
 }
 
 .desk-security-title {
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--k-primary);
-  margin-bottom: 12px;
+  margin-bottom: 4px;
+}
+
+.desk-security-desc {
+  font-size: 12px;
+  color: var(--k-text-muted);
+  margin-bottom: 16px;
 }
 
 /* Forms */
@@ -1143,9 +1308,9 @@ a:hover {
 .form-input {
   padding: 7px 10px;
   font-size: 13.5px;
-  border: 1px solid var(--k-border-strong);
+  border: 1px solid var(--k-form-input-border);
   border-radius: var(--k-radius-xs);
-  background: #ffffff;
+  background: var(--k-form-input-bg);
   color: var(--k-text-main);
   font-family: inherit;
   outline: none;
@@ -1277,6 +1442,10 @@ a:hover {
     display: none !important;
   }
 
+  .mobile-only-block {
+    display: block !important;
+  }
+
   /* Dedicated Mobile Header */
   .mobile-header {
     display: flex !important;
@@ -1284,7 +1453,7 @@ a:hover {
     justify-content: space-between;
     height: var(--k-mobile-header-h);
     padding: 0 var(--k-mobile-gutter);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 246, 252, 0.96) 100%);
+    background: var(--k-header-bg);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--k-border-subtle);
     position: sticky;
@@ -1608,11 +1777,40 @@ a:hover {
   .desk-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 12px;
     padding: 14px 16px;
   }
 
-  .desk-dispatch-item {
+  .desk-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .desk-property-panel {
+    padding: 16px 12px;
+    border-radius: var(--k-radius-sm);
+  }
+
+  .desk-tab-nav {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .desk-tab-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .desk-tab-btn {
+    padding: 7px 12px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .desk-dispatch-item,
+  .desk-item-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
@@ -1622,7 +1820,8 @@ a:hover {
   .desk-item-actions {
     width: 100%;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 8px;
+    margin-left: 0;
   }
 
   .desk-view-btn, .strike-btn {
@@ -1643,7 +1842,7 @@ a:hover {
     right: 0;
     height: var(--k-mobile-nav-h);
     padding-bottom: var(--k-safe-bottom);
-    background: rgba(255, 255, 255, 0.97);
+    background: var(--k-surface-glass);
     backdrop-filter: blur(12px);
     border-top: 1px solid var(--k-border-subtle);
     z-index: 80;
@@ -1782,24 +1981,6 @@ a:hover {
 /* ==========================================================================
    14. DESK TABS & SEARCH BAR STYLES
    ========================================================================== */
-.desk-tabs-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.desk-tab-btn {
-  font-size: 12.5px;
-  padding: 5px 12px;
-  border-radius: var(--k-radius-xs);
-  cursor: pointer;
-}
-.desk-tab-btn.cmd-btn-active {
-  background: var(--k-primary);
-  color: var(--k-text-inverse);
-  font-weight: 600;
-  border-color: var(--k-primary-hover);
-}
-
 .search-bar-card {
   background: var(--k-surface);
   border: 1px solid var(--k-border-subtle);
@@ -1816,4 +1997,98 @@ a:hover {
   border-color: #7dd3fc;
   color: #0369a1;
 }
+
+/* ==========================================================================
+   15. PROFESSIONAL SEARCH SYSTEM & HIGHLIGHTS
+   ========================================================================== */
+.header-search-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+}
+.header-search-input {
+  width: 160px;
+  height: 25px;
+  padding: 2px 24px 2px 9px;
+  font-size: 11.5px;
+  font-family: var(--k-font-ui);
+  border: 1px solid var(--k-border-strong);
+  border-radius: var(--k-radius-xs);
+  background: var(--k-surface);
+  color: var(--k-text-main);
+  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.header-search-input:focus {
+  width: 220px;
+  outline: none;
+  border-color: var(--k-primary);
+  box-shadow: 0 0 0 2px var(--k-focus-ring);
+}
+.header-search-icon {
+  position: absolute;
+  right: 7px;
+  width: 12px;
+  height: 12px;
+  color: var(--k-text-muted);
+  pointer-events: none;
+}
+
+.search-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  font-weight: 500;
+  border-radius: var(--k-radius-full);
+  background: var(--k-surface-alt);
+  border: 1px solid var(--k-border-subtle);
+  color: var(--k-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s ease;
+}
+.search-chip:hover {
+  background: var(--k-surface-hover);
+  color: var(--k-primary);
+  border-color: var(--k-border-strong);
+}
+.search-chip.active {
+  background: var(--k-primary);
+  color: var(--k-text-inverse);
+  border-color: var(--k-primary-hover);
+}
+
+.search-match-snippet {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--k-text-main);
+  background: var(--k-surface-alt);
+  padding: 10px 14px;
+  border-left: 3px solid var(--k-primary);
+  border-radius: var(--k-radius-xs);
+  margin-top: 4px;
+}
+mark.search-match {
+  background-color: #fef08a;
+  color: #854d0e;
+  font-weight: 600;
+  padding: 1px 3px;
+  border-radius: 2px;
+}
+[data-theme="amber"] mark.search-match {
+  background-color: #f59e0b;
+  color: #12100d;
+}
+[data-theme="lamp"] mark.search-match {
+  background-color: #fed7aa;
+  color: #7c2d12;
+}
+
+@media (max-width: 768px) {
+  .header-search-form {
+    display: none !important;
+  }
+}
+
 

@@ -3,58 +3,155 @@
 {% block title %}Search Dispatches — Kotonoki (言の木){% endblock %}
 
 {% block breadcrumb %}
-  <span class="crumb-current">Find Dispatches</span>
+<span class="crumb-current">Find Dispatches</span>
 {% endblock %}
 
 {% block mobile_header_left %}
-  <a href="/" class="mobile-back-link" title="Return to feed">
-    ← Feed
-  </a>
+<a href="/" class="mobile-back-link" title="Return to feed">
+  ← Feed
+</a>
 {% endblock %}
 
 {% block mobile_header_center %}
-  <span class="mobile-context-pill">Search</span>
+<span class="mobile-context-pill">Search</span>
 {% endblock %}
 
 {% block content %}
-  <div class="search-view-container" style="max-width: 760px; margin: 0 auto; width: 100%;">
-    <!-- Search Query Bar -->
-    <div class="dispatch-card search-bar-card" style="padding: 16px 20px; margin-bottom: 20px;">
-      <form action="/search" method="GET" class="search-form" id="search-form">
-        <div class="search-input-wrapper" style="display: flex; gap: 10px; align-items: center;">
-          <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style="color: var(--k-text-muted); flex-shrink: 0;">
-            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-          </svg>
-          <input 
-            type="search" 
-            name="q" 
-            id="search-input"
-            class="branch-field-input" 
-            placeholder="Search all writings, branches, titles..." 
-            value="{{ query }}"
-            autofocus
-            autocomplete="off"
-            hx-get="/search"
-            hx-trigger="keyup changed delay:250ms, search"
-            hx-target="#search-results-area"
-            hx-indicator="#search-loading-spinner"
-            aria-label="Search dispatches"
-            style="flex: 1; font-size: 15px; border-radius: var(--k-radius-xs);">
-          
-          <button type="submit" class="cmd-btn cmd-btn-primary" style="padding: 6px 16px;">
-            Find
-          </button>
-        </div>
-      </form>
-      <div id="search-loading-spinner" class="htmx-indicator" style="font-size: 11px; color: var(--k-text-muted); margin-top: 6px; display: none;">
-        Searching dispatches...
-      </div>
-    </div>
+<div class="search-view-container" style="max-width: 760px; margin: 0 auto; width: 100%;">
+  <!-- Search Query Bar Card -->
+  <div class="dispatch-card search-bar-card" style="padding: 18px 20px; margin-bottom: 20px;">
+    <form action="/search" method="GET" class="search-form" id="search-form">
+      <div class="search-input-wrapper" style="position: relative; display: flex; gap: 8px; align-items: center;">
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"
+          style="color: var(--k-text-muted); flex-shrink: 0;">
+          <path
+            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+        </svg>
 
-    <!-- Live Results Target Area -->
-    <div id="search-results-area">
-      {% include "partials/search_results.html" %}
+        <input type="search" name="q" id="search-input" class="branch-field-input"
+          placeholder="Search all writings, /branches, @authors..." value="{{ query }}" autofocus autocomplete="off"
+          inputmode="search" enterkeyhint="search" hx-get="/search" hx-trigger="keyup changed delay:250ms, search"
+          hx-target="#search-results-area" hx-indicator="#search-loading-spinner" hx-sync="this:replace"
+          aria-label="Search dispatches"
+          style="flex: 1; font-size: 15px; border-radius: var(--k-radius-xs); padding-right: 28px;">
+
+        <button type="button" id="search-clear-btn" onclick="clearSearchInput()" title="Clear search"
+          style="display: {% if query %}inline-flex{% else %}none{% endif %}; align-items: center; justify-content: center; position: absolute; right: 80px; background: none; border: none; cursor: pointer; color: var(--k-text-muted); padding: 4px;">
+          <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round">
+            <path d="M3 3l10 10m0-10L3 13" />
+          </svg>
+        </button>
+
+        <button type="submit" class="cmd-btn cmd-btn-primary" style="padding: 7px 18px; font-weight: 600;">
+          Find
+        </button>
+      </div>
+
+      <!-- Filter Chips Row (Scrollable on Mobile) -->
+      <div class="search-filters-row"
+        style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; gap: 10px; flex-wrap: wrap;">
+        <div class="search-branch-chips"
+          style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+          <button type="button" class="search-chip {% if not target_branch %}active{% endif %}"
+            onclick="setSearchBranch('')">
+            All Branches
+          </button>
+          {% for b in branches[:8] %}
+          <button type="button" class="search-chip {% if target_branch == b.slug %}active{% endif %}"
+            onclick="setSearchBranch('{{ b.slug }}')">
+            /{{ b.slug }}
+          </button>
+          {% endfor %}
+        </div>
+
+        <div class="search-sort-select-wrapper"
+          style="font-size: 12px; color: var(--k-text-muted); display: flex; align-items: center; gap: 6px;">
+          <label for="search-sort-select">Sort:</label>
+          <select name="sort" id="search-sort-select" class="form-input"
+            style="padding: 3px 6px; font-size: 12px; width: auto;" onchange="submitSearchSort()">
+            <option value="relevance" {% if sort_by=='relevance' %}selected{% endif %}>Relevance</option>
+            <option value="newest" {% if sort_by=='newest' %}selected{% endif %}>Newest</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Search Syntax Tips -->
+      <div class="search-tips-banner"
+        style="margin-top: 10px; font-size: 11px; color: var(--k-text-muted); display: flex; gap: 12px; flex-wrap: wrap;">
+        <span><strong>Tips:</strong></span>
+        <span><code>/branch</code> in branch</span>
+        <span><code>@handle</code> by author</span>
+        <span><code>"exact phrase"</code> exact words</span>
+      </div>
+    </form>
+
+    <div id="search-loading-spinner" class="htmx-indicator"
+      style="font-size: 12px; color: var(--k-text-muted); margin-top: 8px; display: none;">
+      <span class="status-dot">●</span> Searching indexed dispatches...
     </div>
   </div>
-{% endblock %}
 
+  <!-- Live Results Target Area -->
+  <div id="search-results-area">
+    {% include "partials/search_results.html" %}
+  </div>
+</div>
+
+<script>
+  function clearSearchInput() {
+    const input = document.getElementById('search-input');
+    const clearBtn = document.getElementById('search-clear-btn');
+    if (input) {
+      input.value = '';
+      input.focus();
+      if (clearBtn) clearBtn.style.display = 'none';
+      htmx.trigger(input, 'search');
+    }
+  }
+
+  function setSearchBranch(slug) {
+    const input = document.getElementById('search-input');
+    if (!input) return;
+    let val = input.value;
+    // Remove existing /branch pattern
+    val = val.replace(/(?:branch:|(?<=\s)\/|^\/)([a-z0-9-]+)/gi, '').trim();
+    if (slug) {
+      val = '/' + slug + ' ' + val;
+    }
+    input.value = val.trim();
+    htmx.trigger(input, 'search');
+    updateChipActive(slug);
+  }
+
+  function updateChipActive(slug) {
+    document.querySelectorAll('.search-chip').forEach(chip => {
+      const text = chip.textContent.trim();
+      if (!slug && text === 'All Branches') {
+        chip.classList.add('active');
+      } else if (slug && text === '/' + slug) {
+        chip.classList.add('active');
+      } else {
+        chip.classList.remove('active');
+      }
+    });
+  }
+
+  function submitSearchSort() {
+    const form = document.getElementById('search-form');
+    const input = document.getElementById('search-input');
+    if (input && input.value.trim()) {
+      htmx.trigger(input, 'search');
+    }
+  }
+
+  // Toggle clear button on input
+  const sInput = document.getElementById('search-input');
+  const sClear = document.getElementById('search-clear-btn');
+  if (sInput && sClear) {
+    sInput.addEventListener('input', () => {
+      sClear.style.display = sInput.value.trim() ? 'block' : 'none';
+    });
+  }
+</script>
+{% endblock %}

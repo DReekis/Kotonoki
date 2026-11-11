@@ -64,6 +64,18 @@ app.wsgi_app = VercelPathFixMiddleware(app.wsgi_app)
 with app.app_context():
     try:
         db.create_all()
+        # Ensure PostgreSQL GIN full-text search index exists for high-scale search
+        if db.engine.dialect.name == "postgresql":
+            try:
+                with db.engine.connect() as conn:
+                    conn.execute(db.text(
+                        "CREATE INDEX IF NOT EXISTS idx_dispatches_fts ON dispatches "
+                        "USING gin(to_tsvector('english', title || ' ' || content_html));"
+                    ))
+                    conn.commit()
+            except Exception as fts_err:
+                print(f"FTS index init note: {fts_err}")
+
         from app.models import Branch
         has_branches = db.session.execute(db.select(Branch.id).limit(1)).first() is not None
         if not has_branches:

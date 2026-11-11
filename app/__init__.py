@@ -44,7 +44,7 @@ def create_app(config_class=Config):
             "csrf_field": csrf_field,
             "current_user": get_current_pen_name(),
             "now_utc": datetime.now(timezone.utc),
-            "asset_version": "2.3"
+            "asset_version": "3.0"
         }
 
     # Template filters

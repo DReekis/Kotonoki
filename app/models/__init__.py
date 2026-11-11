@@ -57,6 +57,7 @@ class Dispatch(db.Model):
         db.Index("idx_dispatches_feed", "published_at", "id"),
         db.Index("idx_dispatches_branch_feed", "branch_id", "published_at", "id"),
         db.Index("idx_dispatches_author", "author_id", "published_at"),
+        db.Index("idx_dispatches_title", "title"),
     )
 
     @property
