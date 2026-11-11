@@ -14,6 +14,22 @@
   <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
 
+  <!-- RSS 2.0 / Atom Syndication Autodiscovery -->
+  <link rel="alternate" type="application/rss+xml" title="Kotonoki (言の木) — All Dispatches" href="/feed.xml">
+  {% if current_branch %}
+    <link rel="alternate" type="application/rss+xml" title="Kotonoki (言の木) — /{{ current_branch.slug }}" href="/{{ current_branch.slug }}/feed.xml">
+  {% endif %}
+
+  <!-- Instant Theme Initializer (Prevents Theme Flash) -->
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('kotonoki_theme');
+        if (t) document.documentElement.setAttribute('data-theme', t);
+      } catch(e) {}
+    })();
+  </script>
+
   <!-- Core Stylesheets with Cache-Busting -->
   <link rel="stylesheet" href="/static/css/tokens.css?v={{ asset_version }}">
   <link rel="stylesheet" href="/static/css/explorer.css?v={{ asset_version }}">
@@ -123,9 +139,28 @@
             </svg>
             <span>Browse Branches</span>
           </a>
+
+          <a href="/search" class="cmd-btn {% if request.path == '/search' %}cmd-btn-active{% endif %}" title="Search and find dispatches across all branches (Ctrl+K)">
+            <svg class="btn-icon-svg" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style="width:16px; height:16px; flex-shrink:0;">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+            <span>Find</span>
+          </a>
         </div>
 
         <div class="command-group cmd-secondary-group">
+          <a href="/feed.xml" class="cmd-btn cmd-btn-quiet" title="Subscribe via RSS 2.0 / Atom" target="_blank" rel="noopener">
+            <svg class="btn-icon-svg" viewBox="0 0 16 16" width="14" height="14" fill="currentColor" style="width:14px; height:14px; flex-shrink:0;">
+              <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm1.5 2.5a10 10 0 0 1 10 10h-2a8 8 0 0 0-8-8v-2zm0 4a6 6 0 0 1 6 6h-2a4 4 0 0 0-4-4v-2zm1 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+            </svg>
+            <span>RSS</span>
+          </a>
+
+          <button type="button" id="theme-toggle-btn" class="cmd-btn cmd-btn-quiet" onclick="cycleKotonokiTheme()" title="Switch Reading Theme (Daylight / Lamp / CRT)">
+            <span id="theme-toggle-icon">☼</span>
+            <span id="theme-toggle-label">Daylight</span>
+          </button>
+
           {% if current_user %}
             <a href="/desk" class="cmd-btn {% if request.path == '/desk' %}cmd-btn-active{% endif %}">
               <svg class="btn-icon-svg" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style="width:16px; height:16px; flex-shrink:0;">
@@ -170,6 +205,11 @@
 
       <div class="mobile-header-right">
         {% block mobile_header_right %}
+          <a href="/search" class="mobile-auth-link" style="margin-right: 8px; display: inline-flex; align-items: center;" title="Search">
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+          </a>
           {% if current_user %}
             <a href="/desk" class="mobile-user-badge" title="My Desk">
               <span class="status-dot">●</span>
@@ -283,6 +323,14 @@
           </svg>
         </div>
         <span class="mobile-nav-label">Write</span>
+      </a>
+
+      <a href="/search" class="mobile-nav-item {% if request.path == '/search' %}active{% endif %}" title="Find / Search">
+        <svg class="mobile-nav-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px; height:22px; flex-shrink:0;">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <span class="mobile-nav-label">Find</span>
       </a>
 
       <a href="{% if current_user %}/desk{% else %}/auth{% endif %}" class="mobile-nav-item {% if request.path in ['/desk', '/auth'] %}active{% endif %}" title="My Desk / Account">

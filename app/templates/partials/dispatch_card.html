@@ -37,6 +37,24 @@
         </svg>
         <span class="action-btn-text">Sticky Desk</span>
       </button>
+
+      <button 
+        type="button" 
+        class="action-btn-subtle clip-memo-btn" 
+        data-dispatch-id="{{ d.id }}"
+        data-dispatch-title="{{ d.title | e }}"
+        data-dispatch-branch="{{ d.branch.slug }}"
+        data-dispatch-author="{{ d.author.handle }}"
+        data-dispatch-date="{{ d.published_at.strftime('%b %d, %Y') }}"
+        onclick="toggleClipMemo(this)" 
+        title="Clip to your private desk binder"
+        aria-label="Clip to private desk binder">
+        <svg class="action-icon-svg clip-icon-svg" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; flex-shrink:0;">
+          <path d="M14 8.5V13a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h4.5"/>
+          <path d="M12.5 1.5l2 2L8 10H6v-2l6.5-6.5z"/>
+        </svg>
+        <span class="action-btn-text clip-btn-label">Clip</span>
+      </button>
     </div>
 
     <div class="secondary-actions">

@@ -230,4 +230,233 @@ document.addEventListener('DOMContentLoaded', () => {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     });
   }
+
+  // 8. Clipped Memos (Private Local Reading Binder)
+  window.toggleClipMemo = function(btn) {
+    if (!btn) return;
+    const id = btn.getAttribute('data-dispatch-id');
+    const title = btn.getAttribute('data-dispatch-title') || 'Untitled';
+    const branch = btn.getAttribute('data-dispatch-branch') || 'all';
+    const author = btn.getAttribute('data-dispatch-author') || 'anonymous';
+    const date = btn.getAttribute('data-dispatch-date') || '';
+
+    try {
+      let memos = JSON.parse(localStorage.getItem('kotonoki_clipped_memos') || '[]');
+      const existsIndex = memos.findIndex(m => m.id === id);
+
+      if (existsIndex >= 0) {
+        // Unclip
+        memos.splice(existsIndex, 1);
+        btn.classList.remove('clipped');
+        const label = btn.querySelector('.clip-btn-label');
+        if (label) label.textContent = 'Clip';
+      } else {
+        // Clip
+        memos.unshift({ id, title, branch, author, date, savedAt: new Date().toISOString() });
+        btn.classList.add('clipped');
+        const label = btn.querySelector('.clip-btn-label');
+        if (label) label.textContent = 'Clipped';
+      }
+
+      localStorage.setItem('kotonoki_clipped_memos', JSON.stringify(memos));
+      window.updateAllClipButtons();
+
+      const badge = document.getElementById('clipped-count-badge');
+      if (badge) badge.textContent = memos.length;
+    } catch (e) {
+      console.warn('Clip memo error:', e);
+    }
+  };
+
+  window.updateAllClipButtons = function() {
+    try {
+      const memos = JSON.parse(localStorage.getItem('kotonoki_clipped_memos') || '[]');
+      const clipIds = new Set(memos.map(m => m.id));
+
+      document.querySelectorAll('.clip-memo-btn').forEach(btn => {
+        const id = btn.getAttribute('data-dispatch-id');
+        const isClipped = clipIds.has(id);
+        btn.classList.toggle('clipped', isClipped);
+        const label = btn.querySelector('.clip-btn-label');
+        if (label) label.textContent = isClipped ? 'Clipped' : 'Clip';
+      });
+
+      const badge = document.getElementById('clipped-count-badge');
+      if (badge) badge.textContent = memos.length;
+    } catch (e) {}
+  };
+
+  window.updateAllClipButtons();
+
+  // Re-run clip button state on HTMX partial content swaps
+  document.body.addEventListener('htmx:afterSwap', () => {
+    window.updateAllClipButtons();
+  });
+
+  // 9. Retro Reading Themes (Daylight -> Late-Night Lamp -> Amber CRT)
+  const THEMES = ['default', 'lamp', 'amber'];
+  const THEME_LABELS = {
+    'default': { icon: '☼', label: 'Daylight' },
+    'lamp': { icon: '☕', label: 'Lamp' },
+    'amber': { icon: '📺', label: 'Amber CRT' }
+  };
+
+  window.cycleKotonokiTheme = function() {
+    try {
+      const current = localStorage.getItem('kotonoki_theme') || 'default';
+      const currentIndex = THEMES.indexOf(current);
+      const nextTheme = THEMES[(currentIndex + 1) % THEMES.length];
+
+      if (nextTheme === 'default') {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.removeItem('kotonoki_theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', nextTheme);
+        localStorage.setItem('kotonoki_theme', nextTheme);
+      }
+
+      applyThemeLabels(nextTheme);
+    } catch (e) {}
+  };
+
+  function applyThemeLabels(theme) {
+    const info = THEME_LABELS[theme] || THEME_LABELS['default'];
+    const iconEl = document.getElementById('theme-toggle-icon');
+    const labelEl = document.getElementById('theme-toggle-label');
+    if (iconEl) iconEl.textContent = info.icon;
+    if (labelEl) labelEl.textContent = info.label;
+  }
+
+  // Initialize theme label on page load
+  const activeTheme = localStorage.getItem('kotonoki_theme') || 'default';
+  applyThemeLabels(activeTheme);
+
+  // 10. Web Audio API Tactile Typewriter Sound Synthesizer (for /write)
+  class TypewriterSynthesizer {
+    constructor() {
+      this.ctx = null;
+      this.enabled = localStorage.getItem('kotonoki_typewriter_sound') === 'true';
+    }
+
+    init() {
+      if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioCtx();
+      }
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
+    }
+
+    playKey() {
+      if (!this.enabled) return;
+      this.init();
+      if (!this.ctx) return;
+
+      try {
+        const sampleRate = this.ctx.sampleRate;
+        const bufferSize = Math.floor(sampleRate * 0.032); // 32ms micro-burst
+        const buffer = this.ctx.createBuffer(1, bufferSize, sampleRate);
+        const data = buffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+          const decay = Math.exp(-i / (sampleRate * 0.006));
+          data[i] = (Math.random() * 2 - 1) * decay;
+        }
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1750 + Math.random() * 350;
+        filter.Q.value = 2.8;
+
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.10;
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        noise.start();
+      } catch (e) {}
+    }
+
+    playEnter() {
+      if (!this.enabled) return;
+      this.init();
+      if (!this.ctx) return;
+
+      try {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1760, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.16);
+
+        gain.gain.setValueAtTime(0.07, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.16);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.16);
+      } catch (e) {}
+    }
+
+    toggle() {
+      this.enabled = !this.enabled;
+      localStorage.setItem('kotonoki_typewriter_sound', this.enabled ? 'true' : 'false');
+      if (this.enabled) {
+        this.init();
+        this.playKey();
+      }
+      return this.enabled;
+    }
+  }
+
+  const typewriter = new TypewriterSynthesizer();
+  const soundBtn = document.getElementById('typewriter-sound-btn');
+  const soundLabel = document.getElementById('typewriter-sound-label');
+
+  if (soundBtn) {
+    if (typewriter.enabled) {
+      soundBtn.classList.add('active');
+      if (soundLabel) soundLabel.textContent = '⌨ Sound: On';
+    }
+
+    soundBtn.addEventListener('click', () => {
+      const isNowOn = typewriter.toggle();
+      soundBtn.classList.toggle('active', isNowOn);
+      if (soundLabel) soundLabel.textContent = isNowOn ? '⌨ Sound: On' : '⌨ Sound: Off';
+    });
+  }
+
+  // Listen for typing events on editor & inputs
+  document.addEventListener('keydown', (e) => {
+    // Check if target is inside editor, input, or textarea
+    const isEditing = e.target.closest('#tiptap-editor') ||
+                      e.target.closest('#dispatch-title-input') ||
+                      e.target.closest('#dispatch-branch-input') ||
+                      e.target.tagName === 'INPUT' ||
+                      e.target.tagName === 'TEXTAREA';
+
+    if (isEditing && typewriter.enabled) {
+      if (e.key === 'Enter') {
+        typewriter.playEnter();
+      } else if (!['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab'].includes(e.key)) {
+        typewriter.playKey();
+      }
+    }
+
+    // Global keyboard shortcut: Ctrl+K or / (when not focused in an input) opens Search
+    if ((e.ctrlKey && e.key === 'k') || (e.key === '/' && !isEditing)) {
+      if (window.location.pathname !== '/search') {
+        e.preventDefault();
+        window.location.href = '/search';
+      }
+    }
+  });
 });

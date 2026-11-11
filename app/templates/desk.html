@@ -42,6 +42,16 @@
           </svg>
           <span>New Dispatch</span>
         </a>
+        <form action="/desk/export" method="POST" style="display:inline;">
+          {{ csrf_field() | safe }}
+          <button type="submit" class="cmd-btn" title="Download all your dispatches as an offline Markdown archive (.zip)">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" style="vertical-align:text-bottom; margin-right:4px;">
+              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+            </svg>
+            <span>Export Journal</span>
+          </button>
+        </form>
         <form action="/auth/logout" method="POST" style="display:inline;">
           {{ csrf_field() | safe }}
           <button type="submit" class="cmd-btn">Sign Out</button>
@@ -49,8 +59,26 @@
       </div>
     </header>
 
-    <!-- Author's Dispatches -->
-    <section class="desk-section">
+    <!-- Navigation Tabs: Your Dispatches vs Clipped Memos -->
+    <div class="desk-tabs-bar" style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid var(--k-border-subtle); padding-bottom: 10px;">
+      <button type="button" class="cmd-btn cmd-btn-active desk-tab-btn" id="tab-btn-dispatches" onclick="switchDeskTab('dispatches')">
+        Your Dispatches ({{ dispatches | length }})
+      </button>
+      <button type="button" class="cmd-btn desk-tab-btn" id="tab-btn-clipped" onclick="switchDeskTab('clipped')">
+        📌 Clipped Memos (<span id="clipped-count-badge">0</span>)
+      </button>
+      <div style="margin-left: auto;" class="mobile-only-block">
+        <form action="/desk/export" method="POST" style="display:inline;">
+          {{ csrf_field() | safe }}
+          <button type="submit" class="cmd-btn" style="font-size: 11px; padding: 4px 8px;">
+            Export (.zip)
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Section A: Author's Dispatches -->
+    <section id="desk-section-dispatches" class="desk-section">
       <div class="feed-header" style="margin-bottom: 14px;">
         <h2 class="feed-header-title" style="font-size: 16px;">Your Dispatches ({{ dispatches | length }})</h2>
         <span class="feed-header-meta">Manage or Strike your published writings</span>
@@ -111,6 +139,31 @@
       {% endif %}
     </section>
 
+    <!-- Section B: Clipped Memos (Private Local Reading Binder) -->
+    <section id="desk-section-clipped" class="desk-section" style="display: none;">
+      <div class="feed-header" style="margin-bottom: 14px;">
+        <h2 class="feed-header-title" style="font-size: 16px;">Clipped Memos</h2>
+        <span class="feed-header-meta">Dispatches you've saved to your private local binder</span>
+      </div>
+
+      <div id="clipped-memos-list" class="desk-dispatches-list">
+        <!-- Rendered dynamically from localStorage via JavaScript -->
+      </div>
+
+      <div id="clipped-memos-empty" class="empty-feed" style="display: none; padding: 32px 16px;">
+        <div class="empty-feed-icon">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--k-text-faint);">
+            <line x1="12" y1="17" x2="12" y2="22"></line>
+            <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
+          </svg>
+        </div>
+        <div class="empty-feed-title" style="font-size: 15px;">No clipped memos yet.</div>
+        <div style="font-size: 13px; color: var(--k-text-muted); margin-top: 4px;">
+          Click the "Clip" button on any dispatch in the feed to pin it here for private reading.
+        </div>
+      </div>
+    </section>
+
     <!-- Password Management -->
     <section class="desk-section desk-security-card">
       <h2 class="desk-security-title">
@@ -141,4 +194,91 @@
       </form>
     </section>
   </div>
+
+  <script>
+    function switchDeskTab(tab) {
+      const secDispatches = document.getElementById('desk-section-dispatches');
+      const secClipped = document.getElementById('desk-section-clipped');
+      const btnDispatches = document.getElementById('tab-btn-dispatches');
+      const btnClipped = document.getElementById('tab-btn-clipped');
+
+      if (tab === 'clipped') {
+        if (secDispatches) secDispatches.style.display = 'none';
+        if (secClipped) secClipped.style.display = 'block';
+        if (btnDispatches) btnDispatches.classList.remove('cmd-btn-active');
+        if (btnClipped) btnClipped.classList.add('cmd-btn-active');
+        renderClippedMemos();
+      } else {
+        if (secDispatches) secDispatches.style.display = 'block';
+        if (secClipped) secClipped.style.display = 'none';
+        if (btnDispatches) btnDispatches.classList.add('cmd-btn-active');
+        if (btnClipped) btnClipped.classList.remove('cmd-btn-active');
+      }
+    }
+
+    function renderClippedMemos() {
+      const list = document.getElementById('clipped-memos-list');
+      const empty = document.getElementById('clipped-memos-empty');
+      const badge = document.getElementById('clipped-count-badge');
+      if (!list) return;
+
+      let memos = [];
+      try {
+        memos = JSON.parse(localStorage.getItem('kotonoki_clipped_memos') || '[]');
+      } catch (e) {
+        memos = [];
+      }
+
+      if (badge) badge.textContent = memos.length;
+
+      if (!memos.length) {
+        list.innerHTML = '';
+        if (empty) empty.style.display = 'block';
+        return;
+      }
+
+      if (empty) empty.style.display = 'none';
+      list.innerHTML = memos.map(m => `
+        <div class="dispatch-card desk-dispatch-item" id="clipped-${m.id}">
+          <div class="desk-item-content">
+            <h3 class="desk-item-title">
+              <a href="/${m.branch}/${m.id}">${m.title}</a>
+            </h3>
+            <div class="desk-item-meta">
+              <a href="/${m.branch}" class="branch-tag" style="font-size: 11px;">/${m.branch}</a>
+              <span>·</span>
+              <span>by ${m.author}</span>
+              <span>·</span>
+              <span>Saved ${m.date || 'recently'}</span>
+            </div>
+          </div>
+          <div class="desk-item-actions">
+            <a href="/${m.branch}/${m.id}" class="cmd-btn desk-view-btn">Read</a>
+            <button type="button" class="cmd-btn strike-btn" onclick="unclipMemo('${m.id}')" title="Remove from binder">
+              Unclip
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function unclipMemo(id) {
+      try {
+        let memos = JSON.parse(localStorage.getItem('kotonoki_clipped_memos') || '[]');
+        memos = memos.filter(m => m.id !== id);
+        localStorage.setItem('kotonoki_clipped_memos', JSON.stringify(memos));
+        renderClippedMemos();
+        if (window.updateAllClipButtons) window.updateAllClipButtons();
+      } catch (e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize badge count
+      try {
+        const memos = JSON.parse(localStorage.getItem('kotonoki_clipped_memos') || '[]');
+        const badge = document.getElementById('clipped-count-badge');
+        if (badge) badge.textContent = memos.length;
+      } catch (e) {}
+    });
+  </script>
 {% endblock %}

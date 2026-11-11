@@ -371,3 +371,113 @@ def test_feed_service_eager_loading(app, test_user):
         assert item.branch.slug == "speed-branch"
         assert item.author.handle == test_user.handle
 
+
+# ============================================================================
+# 8. RSS 2.0 / ATOM SYNDICATION TESTS
+# ============================================================================
+def test_rss_feeds_global_and_branch(app, client, test_user):
+    with app.app_context():
+        branch, _ = BranchService.get_or_create("poetry")
+        d = Dispatch(
+            branch_id=branch.id,
+            author_id=test_user.id,
+            title="Autumn Haiku",
+            content_html="<p>Falling red maple leaves.</p>"
+        )
+        db.session.add(d)
+        db.session.commit()
+
+    # Global RSS feed
+    resp_global = client.get("/feed.xml")
+    assert resp_global.status_code == 200
+    assert "application/rss+xml" in resp_global.headers.get("Content-Type", "")
+    assert b"<rss version=\"2.0\"" in resp_global.data
+    assert b"Autumn Haiku" in resp_global.data
+
+    # Branch-specific RSS feed
+    resp_branch = client.get("/poetry/feed.xml")
+    assert resp_branch.status_code == 200
+    assert "application/rss+xml" in resp_branch.headers.get("Content-Type", "")
+    assert b"Kotonoki /poetry" in resp_branch.data
+    assert b"Autumn Haiku" in resp_branch.data
+
+    # Non-existent branch feed returns 404
+    resp_nonexistent = client.get("/non-existent-xyz/feed.xml")
+    assert resp_nonexistent.status_code == 404
+
+
+# ============================================================================
+# 9. DISPATCH SEARCH TESTS
+# ============================================================================
+def test_search_view_and_htmx_partial(app, client, test_user):
+    with app.app_context():
+        branch, _ = BranchService.get_or_create("science")
+        d = Dispatch(
+            branch_id=branch.id,
+            author_id=test_user.id,
+            title="Quantum Entanglement Basics",
+            content_html="<p>Non-local correlations between particles.</p>"
+        )
+        db.session.add(d)
+        db.session.commit()
+
+    # Full search page
+    resp_page = client.get("/search?q=Quantum")
+    assert resp_page.status_code == 200
+    assert b"Quantum Entanglement Basics" in resp_page.data
+
+    # HTMX partial search query
+    resp_htmx = client.get("/search?q=correlations", headers={"HX-Request": "true"})
+    assert resp_htmx.status_code == 200
+    assert b"search-results-container" in resp_htmx.data
+    assert b"Quantum Entanglement Basics" in resp_htmx.data
+
+    # Empty query returns prompt
+    resp_empty = client.get("/search", headers={"HX-Request": "true"})
+    assert resp_empty.status_code == 200
+    assert b"Search through all public branches" in resp_empty.data
+
+
+# ============================================================================
+# 10. JOURNAL EXPORT TESTS
+# ============================================================================
+def test_desk_journal_export_zip(app, client, test_user):
+    import zipfile
+    import io
+
+    with app.app_context():
+        user_id = test_user.id
+        user_handle = test_user.handle
+        branch, _ = BranchService.get_or_create("memories")
+        d = Dispatch(
+            branch_id=branch.id,
+            author_id=user_id,
+            title="Childhood Bicycle",
+            content_html="<p>Riding down the hill.</p>"
+        )
+        db.session.add(d)
+        db.session.commit()
+
+    # Log in as test_user via session
+    with client.session_transaction() as sess:
+        sess["pen_name_id"] = user_id
+
+    # Authenticated export
+    resp_export = client.post("/desk/export")
+    assert resp_export.status_code == 200
+    assert resp_export.headers.get("Content-Type") == "application/zip"
+    assert "attachment" in resp_export.headers.get("Content-Disposition", "")
+    assert f"kotonoki-{user_handle}-journal.zip" in resp_export.headers.get("Content-Disposition", "")
+
+    # Verify ZIP contents
+    zip_bytes = io.BytesIO(resp_export.data)
+    with zipfile.ZipFile(zip_bytes, "r") as zf:
+        namelist = zf.namelist()
+        assert "README.md" in namelist
+        assert any(name.startswith("dispatches/") and name.endswith(".md") for name in namelist)
+        readme_content = zf.read("README.md").decode("utf-8")
+        assert user_handle in readme_content
+        assert "Childhood Bicycle" in readme_content
+
+
+

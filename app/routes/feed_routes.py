@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, abort, redirect, url_for
+from flask import Blueprint, render_template, request, abort, redirect, url_for, Response
 from sqlalchemy.orm import joinedload
 from app.extensions import db
 from app.models import Branch, Dispatch
@@ -60,6 +60,92 @@ def branches_list():
         current_branch=None,
         active_nav="branches"
     )
+
+@feed_bp.route("/search", methods=["GET"])
+def search():
+    query = request.args.get("q", "").strip()
+    branches = BranchService.get_popular_branches(limit=30)
+    dispatches = []
+
+    if query:
+        search_term = f"%{query}%"
+        dispatches = db.session.execute(
+            db.select(Dispatch)
+            .options(joinedload(Dispatch.branch), joinedload(Dispatch.author))
+            .where(
+                db.or_(
+                    Dispatch.title.ilike(search_term),
+                    Dispatch.content_html.ilike(search_term)
+                )
+            )
+            .order_by(Dispatch.published_at.desc())
+            .limit(40)
+        ).scalars().all()
+
+    if request.headers.get("HX-Request"):
+        return render_template(
+            "partials/search_results.html",
+            query=query,
+            dispatches=dispatches
+        )
+
+    return render_template(
+        "search.html",
+        query=query,
+        dispatches=dispatches,
+        branches=branches,
+        current_branch=None,
+        active_nav="search"
+    )
+
+@feed_bp.route("/feed.xml", methods=["GET"])
+@feed_bp.route("/rss.xml", methods=["GET"])
+def rss_feed():
+    dispatches = db.session.execute(
+        db.select(Dispatch)
+        .options(joinedload(Dispatch.branch), joinedload(Dispatch.author))
+        .order_by(Dispatch.published_at.desc())
+        .limit(30)
+    ).scalars().all()
+
+    site_url = request.url_root.rstrip("/")
+    feed_xml = render_template(
+        "feed.xml",
+        dispatches=dispatches,
+        feed_title="Kotonoki (言の木) — All Dispatches",
+        feed_description="A quiet public journal and chronological micro-publishing platform.",
+        site_url=site_url,
+        feed_url=f"{site_url}/feed.xml"
+    )
+    return Response(feed_xml, mimetype="application/rss+xml; charset=utf-8")
+
+@feed_bp.route("/<string:branch_slug>/feed.xml", methods=["GET"])
+def branch_rss_feed(branch_slug: str):
+    slug = branch_slug.lower()
+    branch = db.session.execute(
+        db.select(Branch).where(Branch.slug == slug)
+    ).scalar_one_or_none()
+    if not branch:
+        abort(404, description="Branch does not exist.")
+
+    dispatches = db.session.execute(
+        db.select(Dispatch)
+        .options(joinedload(Dispatch.branch), joinedload(Dispatch.author))
+        .where(Dispatch.branch_id == branch.id)
+        .order_by(Dispatch.published_at.desc())
+        .limit(30)
+    ).scalars().all()
+
+    site_url = request.url_root.rstrip("/")
+    feed_xml = render_template(
+        "feed.xml",
+        dispatches=dispatches,
+        feed_title=f"Kotonoki /{branch.slug}",
+        feed_description=f"Chronological dispatches published to the /{branch.slug} branch on Kotonoki.",
+        site_url=site_url,
+        feed_url=f"{site_url}/{branch.slug}/feed.xml"
+    )
+    return Response(feed_xml, mimetype="application/rss+xml; charset=utf-8")
 
 @feed_bp.route("/api/index", methods=["GET"])
 @feed_bp.route("/api", methods=["GET"])

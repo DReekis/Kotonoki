@@ -1,0 +1,38 @@
+<div class="search-results-container">
+  {% if query %}
+    <div class="search-results-meta" style="margin-bottom: 16px; font-size: 13px; color: var(--k-text-muted);">
+      Found <strong>{{ dispatches | length }}</strong> dispatch{{ 'es' if dispatches | length != 1 else '' }} matching "<em>{{ query }}</em>"
+    </div>
+  {% endif %}
+
+  {% if dispatches %}
+    <div class="search-dispatches-list">
+      {% for d in dispatches %}
+        {% include "partials/dispatch_card.html" %}
+      {% endfor %}
+    </div>
+  {% elif query %}
+    <div class="empty-feed" style="padding: 40px 16px; text-align: center;">
+      <div class="empty-feed-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--k-text-faint);">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </div>
+      <div class="empty-feed-title" style="margin-top: 8px; font-weight: 600;">No dispatches found</div>
+      <div style="font-size: 13px; color: var(--k-text-muted); margin-top: 4px;">
+        Try searching for a different keyword or topic across branches.
+      </div>
+    </div>
+  {% else %}
+    <div class="search-empty-prompt" style="text-align: center; padding: 48px 16px; color: var(--k-text-muted);">
+      <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--k-text-faint); margin-bottom: 8px;">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <div style="font-size: 14px; font-weight: 500;">Search through all public branches</div>
+      <div style="font-size: 12px; color: var(--k-text-faint); margin-top: 4px;">Type any title, theme, or thought above</div>
+    </div>
+  {% endif %}
+</div>
+

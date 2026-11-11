@@ -78,3 +78,68 @@
   --k-safe-left: env(safe-area-inset-left, 0px);
   --k-safe-right: env(safe-area-inset-right, 0px);
 }
+
+/* ==========================================================================
+   2. LATE-NIGHT LAMP THEME (Warm Sepia / Reading by Desk Lamp)
+   ========================================================================== */
+[data-theme="lamp"] {
+  --k-canvas-bg: #f3eae0;
+  --k-surface: #fbf7f0;
+  --k-surface-alt: #ece1d2;
+  --k-surface-glass: rgba(248, 243, 235, 0.95);
+  --k-surface-hover: #e5d8c7;
+  --k-surface-selected: #dac8b3;
+
+  --k-border-subtle: #d5c4b0;
+  --k-border-strong: #b5a088;
+  --k-border-glass: rgba(255, 255, 255, 0.6);
+  --k-focus-ring: rgba(139, 90, 43, 0.4);
+
+  --k-primary: #5c3b1e;
+  --k-primary-hover: #422812;
+  --k-primary-light: #ece0d1;
+  --k-accent: #8b5a2b;
+
+  --k-text-main: #2b1f14;
+  --k-text-muted: #6e5845;
+  --k-text-faint: #9c846f;
+
+  --k-sticky-bg: #f9f1e1;
+  --k-sticky-border: #d4b886;
+  --k-sticky-header: #eedcbd;
+  --k-sticky-text: #3b240c;
+}
+
+/* ==========================================================================
+   3. AMBER CRT THEME (Vintage Monochrome Terminal Aesthetic)
+   ========================================================================== */
+[data-theme="amber"] {
+  --k-canvas-bg: #12100d;
+  --k-surface: #1a1713;
+  --k-surface-alt: #24201a;
+  --k-surface-glass: rgba(26, 23, 19, 0.95);
+  --k-surface-hover: #2e2820;
+  --k-surface-selected: #3b3328;
+
+  --k-border-subtle: #453c30;
+  --k-border-strong: #786448;
+  --k-border-glass: rgba(245, 158, 11, 0.15);
+  --k-focus-ring: rgba(245, 158, 11, 0.5);
+
+  --k-primary: #f59e0b;
+  --k-primary-hover: #d97706;
+  --k-primary-light: #2b2214;
+  --k-accent: #fbbf24;
+
+  --k-text-main: #fbbf24;
+  --k-text-muted: #d97706;
+  --k-text-faint: #92400e;
+  --k-text-inverse: #12100d;
+
+  --k-sticky-bg: #291e0a;
+  --k-sticky-border: #b45309;
+  --k-sticky-header: #38280f;
+  --k-sticky-text: #fde68a;
+  --k-shadow-card: 0 0 10px rgba(245, 158, 11, 0.08);
+}
+
