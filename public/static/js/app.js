@@ -293,22 +293,21 @@ document.addEventListener('DOMContentLoaded', () => {
     window.updateAllClipButtons();
   });
 
-  // 9. Retro Reading Themes (Daylight -> Late-Night Lamp -> Amber CRT)
-  const THEMES = ['default', 'lamp', 'amber'];
+  // 9. Retro Reading Themes (Daylight -> Late-Night Lamp)
+  const THEMES = ['default', 'lamp'];
   const THEME_ICONS = {
     'default': '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/></svg>',
-    'lamp': '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M5.5 2A2.5 2.5 0 0 1 8 .5 2.5 2.5 0 0 1 10.5 2h2a.5.5 0 0 1 .455.707l-2 4A.5.5 0 0 1 10.5 7h-5a.5.5 0 0 1-.455-.293l-2-4A.5.5 0 0 1 3.5 2h2zM7.5 8v4H5a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H8.5V8h-1zM2 15a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V15z"/></svg>',
-    'amber': '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9.5l.5 2h2a.5.5 0 0 1 0 1h-8a.5.5 0 0 1 0-1h2l.5-2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2z"/></svg>'
+    'lamp': '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M5.5 2A2.5 2.5 0 0 1 8 .5 2.5 2.5 0 0 1 10.5 2h2a.5.5 0 0 1 .455.707l-2 4A.5.5 0 0 1 10.5 7h-5a.5.5 0 0 1-.455-.293l-2-4A.5.5 0 0 1 3.5 2h2zM7.5 8v4H5a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H8.5V8h-1zM2 15a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V15z"/></svg>'
   };
   const THEME_LABELS = {
     'default': 'Daylight',
-    'lamp': 'Lamp',
-    'amber': 'Amber CRT'
+    'lamp': 'Lamp'
   };
 
   window.cycleKotonokiTheme = function() {
     try {
-      const current = localStorage.getItem('kotonoki_theme') || 'default';
+      let current = localStorage.getItem('kotonoki_theme') || 'default';
+      if (!THEMES.includes(current)) current = 'default';
       const currentIndex = THEMES.indexOf(current);
       const nextTheme = THEMES[(currentIndex + 1) % THEMES.length];
 
@@ -334,7 +333,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Initialize theme label on page load
-  const activeTheme = localStorage.getItem('kotonoki_theme') || 'default';
+  let activeTheme = localStorage.getItem('kotonoki_theme') || 'default';
+  if (!THEMES.includes(activeTheme)) {
+    activeTheme = 'default';
+    try {
+      localStorage.removeItem('kotonoki_theme');
+      document.documentElement.removeAttribute('data-theme');
+    } catch (e) {}
+  }
   applyThemeLabels(activeTheme);
 
   // 10. Web Audio API Tactile Typewriter Sound Synthesizer (for /write)
@@ -461,16 +467,408 @@ document.addEventListener('DOMContentLoaded', () => {
     if ((e.ctrlKey && e.key === 'k') || (e.key === '/' && !isEditing)) {
       e.preventDefault();
       const searchPageInput = document.getElementById('search-input');
-      const headerInput = document.getElementById('global-header-search-input');
       if (searchPageInput) {
         searchPageInput.focus();
         searchPageInput.select();
-      } else if (headerInput && window.innerWidth >= 768) {
-        headerInput.focus();
-        headerInput.select();
-      } else if (window.location.pathname !== '/search') {
-        window.location.href = '/search';
+      } else {
+        openGlobalSearchModal();
       }
     }
+
+    if (e.key === 'Escape') {
+      closeGlobalSearchModal();
+      const headerDrop = document.getElementById('header-search-dropdown');
+      if (headerDrop) headerDrop.style.display = 'none';
+    }
+  });
+
+  // ==========================================================================
+  // 11. Dynamic Instant Search (Header Autocomplete & Global Search Modal)
+  // ==========================================================================
+
+  let headerSearchTimeout = null;
+  let headerSearchAbortCtrl = null;
+  let headerSearchResults = [];
+  let headerSearchSelectedIndex = -1;
+
+  window.handleHeaderSearchInput = function(val) {
+    const clearBtn = document.getElementById('header-search-clear-btn');
+    const dropdown = document.getElementById('header-search-dropdown');
+    if (!dropdown) return;
+
+    const query = (val || '').trim();
+    if (clearBtn) clearBtn.style.display = query ? 'inline-flex' : 'none';
+
+    if (!query) {
+      dropdown.style.display = 'none';
+      dropdown.innerHTML = '';
+      headerSearchResults = [];
+      headerSearchSelectedIndex = -1;
+      if (headerSearchAbortCtrl) headerSearchAbortCtrl.abort();
+      return;
+    }
+
+    if (headerSearchTimeout) clearTimeout(headerSearchTimeout);
+    headerSearchTimeout = setTimeout(() => {
+      fetchHeaderSearchResults(query);
+    }, 180);
+  };
+
+  function fetchHeaderSearchResults(query) {
+    const dropdown = document.getElementById('header-search-dropdown');
+    if (!dropdown) return;
+
+    if (headerSearchAbortCtrl) headerSearchAbortCtrl.abort();
+    headerSearchAbortCtrl = new AbortController();
+
+    dropdown.style.display = 'flex';
+    dropdown.innerHTML = `
+      <div class="header-search-drop-loading">
+        <span class="status-dot">●</span>
+        <span>Searching indexed dispatches...</span>
+      </div>
+    `;
+
+    fetch('/api/quick-search?q=' + encodeURIComponent(query), {
+      signal: headerSearchAbortCtrl.signal,
+      headers: { 'Accept': 'application/json' }
+    })
+      .then(res => res.json())
+      .then(data => {
+        headerSearchResults = data.results || [];
+        headerSearchSelectedIndex = -1;
+        renderHeaderSearchResults(query, data);
+      })
+      .catch(err => {
+        if (err.name === 'AbortError') return;
+        dropdown.innerHTML = `
+          <div class="header-search-drop-empty">
+            <span>Unable to load results. Press Enter for full search.</span>
+          </div>
+        `;
+      });
+  }
+
+  function renderHeaderSearchResults(query, data) {
+    const dropdown = document.getElementById('header-search-dropdown');
+    if (!dropdown) return;
+
+    const items = data.results || [];
+    if (!items.length) {
+      dropdown.innerHTML = `
+        <div class="header-search-drop-empty">
+          <div style="font-weight:600; margin-bottom:3px; color:var(--k-text-main);">No dispatches found</div>
+          <div style="font-size:11px;">Press Enter to browse in Dynamic Search Palette</div>
+        </div>
+        <div class="header-search-drop-footer">
+          <a href="javascript:void(0)" onclick="openGlobalSearchModal(null, '${escapeAttr(query)}')">Open Search Palette ↵</a>
+          <span>Esc to close</span>
+        </div>
+      `;
+      return;
+    }
+
+    let listHtml = items.map((item, idx) => `
+      <a href="${item.url}" class="header-search-drop-item" data-index="${idx}" onmouseover="setHeaderSearchSelected(${idx})">
+        <div class="header-search-drop-title">${escapeHtml(item.title)}</div>
+        <div class="header-search-drop-meta">
+          <span class="branch-tag" style="font-size:10px; padding:1px 5px;">/${escapeHtml(item.branch)}</span>
+          <span>·</span>
+          <span>by ${escapeHtml(item.author)}</span>
+          <span>·</span>
+          <span>${escapeHtml(item.published_at)}</span>
+        </div>
+        ${item.excerpt ? `<div class="header-search-drop-excerpt">${item.excerpt}</div>` : ''}
+      </a>
+    `).join('');
+
+    dropdown.innerHTML = `
+      <div class="header-search-drop-header">
+        <span>Quick Matches (${items.length})</span>
+        <span>↑↓ Navigate</span>
+      </div>
+      <div class="header-search-drop-list">
+        ${listHtml}
+      </div>
+      <div class="header-search-drop-footer">
+        <a href="javascript:void(0)" onclick="openGlobalSearchModal(null, '${escapeAttr(query)}')">View in Search Palette ↵</a>
+        <span>Esc Close</span>
+      </div>
+    `;
+  }
+
+  window.setHeaderSearchSelected = function(idx) {
+    headerSearchSelectedIndex = idx;
+    const dropdown = document.getElementById('header-search-dropdown');
+    if (!dropdown) return;
+    const items = dropdown.querySelectorAll('.header-search-drop-item');
+    items.forEach((el, i) => {
+      el.classList.toggle('selected', i === idx);
+    });
+  };
+
+  window.handleHeaderSearchFocus = function() {
+    const input = document.getElementById('global-header-search-input');
+    const dropdown = document.getElementById('header-search-dropdown');
+    if (input && input.value.trim() && dropdown && headerSearchResults.length) {
+      dropdown.style.display = 'flex';
+    }
+  };
+
+  window.handleHeaderSearchKeydown = function(e) {
+    const dropdown = document.getElementById('header-search-dropdown');
+    const isOpen = dropdown && dropdown.style.display !== 'none';
+
+    if (e.key === 'ArrowDown') {
+      if (isOpen && headerSearchResults.length) {
+        e.preventDefault();
+        headerSearchSelectedIndex = Math.min(headerSearchSelectedIndex + 1, headerSearchResults.length - 1);
+        setHeaderSearchSelected(headerSearchSelectedIndex);
+        scrollToSelectedItem();
+      }
+    } else if (e.key === 'ArrowUp') {
+      if (isOpen && headerSearchResults.length) {
+        e.preventDefault();
+        headerSearchSelectedIndex = Math.max(headerSearchSelectedIndex - 1, 0);
+        setHeaderSearchSelected(headerSearchSelectedIndex);
+        scrollToSelectedItem();
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (isOpen && headerSearchSelectedIndex >= 0 && headerSearchResults[headerSearchSelectedIndex]) {
+        window.location.href = headerSearchResults[headerSearchSelectedIndex].url;
+      } else {
+        const input = document.getElementById('global-header-search-input');
+        const q = input ? input.value.trim() : '';
+        openGlobalSearchModal(null, q);
+      }
+    } else if (e.key === 'Escape') {
+      if (dropdown) dropdown.style.display = 'none';
+    }
+  };
+
+  function scrollToSelectedItem() {
+    const dropdown = document.getElementById('header-search-dropdown');
+    if (!dropdown) return;
+    const selected = dropdown.querySelector('.header-search-drop-item.selected');
+    if (selected) {
+      selected.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  window.clearHeaderSearch = function(e) {
+    if (e) e.stopPropagation();
+    const input = document.getElementById('global-header-search-input');
+    const clearBtn = document.getElementById('header-search-clear-btn');
+    const dropdown = document.getElementById('header-search-dropdown');
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
+    if (clearBtn) clearBtn.style.display = 'none';
+    if (dropdown) dropdown.style.display = 'none';
+    headerSearchResults = [];
+    headerSearchSelectedIndex = -1;
+  };
+
+  window.handleHeaderSearchSubmit = function(e) {
+    if (e) e.preventDefault();
+    const input = document.getElementById('global-header-search-input');
+    const q = input ? input.value.trim() : '';
+    openGlobalSearchModal(null, q);
+  };
+
+  // Close header search dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    const form = document.getElementById('desktop-header-search');
+    const dropdown = document.getElementById('header-search-dropdown');
+    if (form && dropdown && !form.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
+
+  // ==========================================================================
+  // Global Dynamic Search Modal
+  // ==========================================================================
+  let modalSearchTimeout = null;
+  let modalSearchAbortCtrl = null;
+  let currentModalBranch = '';
+
+  window.openGlobalSearchModal = function(e, initialQuery) {
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
+
+    // Hide header dropdown if open
+    const headerDrop = document.getElementById('header-search-dropdown');
+    if (headerDrop) headerDrop.style.display = 'none';
+
+    const modal = document.getElementById('global-search-modal');
+    if (!modal) {
+      window.location.href = '/search' + (initialQuery ? ('?q=' + encodeURIComponent(initialQuery)) : '');
+      return;
+    }
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    const input = document.getElementById('modal-search-input');
+    const clearBtn = document.getElementById('modal-search-clear-btn');
+
+    const headerInput = document.getElementById('global-header-search-input');
+    let q = (initialQuery !== undefined && initialQuery !== null) ? initialQuery : (headerInput ? headerInput.value : '');
+
+    if (input) {
+      input.value = q;
+      if (clearBtn) clearBtn.style.display = q.trim() ? 'inline-flex' : 'none';
+      setTimeout(() => {
+        input.focus();
+        input.select();
+      }, 50);
+    }
+
+    if (q.trim()) {
+      runModalSearch();
+    }
+  };
+
+  window.closeGlobalSearchModal = function() {
+    const modal = document.getElementById('global-search-modal');
+    if (modal) {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  };
+
+  window.handleModalBackdropClick = function(e) {
+    if (e.target && e.target.id === 'global-search-modal') {
+      closeGlobalSearchModal();
+    }
+  };
+
+  window.handleModalSearchInput = function(val) {
+    const clearBtn = document.getElementById('modal-search-clear-btn');
+    if (clearBtn) clearBtn.style.display = (val || '').trim() ? 'inline-flex' : 'none';
+
+    if (modalSearchTimeout) clearTimeout(modalSearchTimeout);
+    modalSearchTimeout = setTimeout(() => {
+      runModalSearch();
+    }, 200);
+  };
+
+  window.handleModalSearchKeydown = function(e) {
+    if (e.key === 'Escape') {
+      closeGlobalSearchModal();
+    }
+  };
+
+  window.clearModalSearch = function() {
+    const input = document.getElementById('modal-search-input');
+    const clearBtn = document.getElementById('modal-search-clear-btn');
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
+    if (clearBtn) clearBtn.style.display = 'none';
+    runModalSearch();
+  };
+
+  window.setModalBranch = function(slug) {
+    currentModalBranch = slug || '';
+    const container = document.getElementById('modal-branch-chips');
+    if (container) {
+      container.querySelectorAll('.search-chip').forEach(btn => {
+        const b = btn.getAttribute('data-branch') || '';
+        btn.classList.toggle('active', b === currentModalBranch);
+      });
+    }
+    runModalSearch();
+  };
+
+  window.runModalSearch = function() {
+    const input = document.getElementById('modal-search-input');
+    const body = document.getElementById('modal-search-body');
+    const status = document.getElementById('modal-search-status');
+    const fullLink = document.getElementById('modal-full-search-link');
+    const sortSelect = document.getElementById('modal-sort-select-el');
+
+    if (!body) return;
+
+    const query = input ? input.value.trim() : '';
+    const sort = sortSelect ? sortSelect.value : 'relevance';
+
+    // Update full page link
+    if (fullLink) {
+      let fullUrl = '/search';
+      const params = [];
+      if (query) params.push('q=' + encodeURIComponent(query));
+      if (currentModalBranch) params.push('branch=' + encodeURIComponent(currentModalBranch));
+      if (sort && sort !== 'relevance') params.push('sort=' + encodeURIComponent(sort));
+      if (params.length) fullUrl += '?' + params.join('&');
+      fullLink.href = fullUrl;
+    }
+
+    if (!query && !currentModalBranch) {
+      body.innerHTML = `
+        <div class="search-empty-prompt" style="text-align: center; padding: 40px 16px; color: var(--k-text-muted);">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--k-text-faint); margin-bottom: 10px;">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <div style="font-size: 14px; font-weight: 600; color: var(--k-text-main);">Type to search all public branches</div>
+          <div style="font-size: 12px; color: var(--k-text-muted); margin-top: 4px;">
+            Supports <code>/branch</code>, <code>@author</code>, and <code>"exact phrase"</code>
+          </div>
+        </div>
+      `;
+      if (status) status.textContent = '';
+      return;
+    }
+
+    if (modalSearchAbortCtrl) modalSearchAbortCtrl.abort();
+    modalSearchAbortCtrl = new AbortController();
+
+    if (status) status.innerHTML = '<span class="status-dot">●</span> Searching...';
+
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (currentModalBranch) params.set('branch', currentModalBranch);
+    if (sort) params.set('sort', sort);
+
+    fetch('/search?' + params.toString(), {
+      signal: modalSearchAbortCtrl.signal,
+      headers: { 'HX-Request': 'true' }
+    })
+      .then(res => res.text())
+      .then(html => {
+        body.innerHTML = html;
+        if (window.htmx) {
+          window.htmx.process(body);
+        }
+        if (window.updateAllClipButtons) {
+          window.updateAllClipButtons();
+        }
+        if (status) status.textContent = '';
+      })
+      .catch(err => {
+        if (err.name === 'AbortError') return;
+        if (status) status.textContent = 'Error searching dispatches.';
+      });
+  };
+
+  function escapeAttr(str) {
+    if (!str) return '';
+    return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
   });
 });

@@ -25,6 +25,10 @@
     (function() {
       try {
         var t = localStorage.getItem('kotonoki_theme');
+        if (t === 'amber') {
+          localStorage.removeItem('kotonoki_theme');
+          t = null;
+        }
         if (t) document.documentElement.setAttribute('data-theme', t);
       } catch(e) {}
     })();
@@ -91,8 +95,8 @@
           </div>
         </nav>
 
-        <!-- Header Quick Search (Windows Explorer Search Style) -->
-        <form action="/search" method="GET" class="header-search-form desktop-only-flex" id="desktop-header-search">
+        <!-- Header Quick Search (Windows Explorer Search Style with Dynamic Autocomplete) -->
+        <form action="/search" method="GET" class="header-search-form desktop-only-flex" id="desktop-header-search" onsubmit="handleHeaderSearchSubmit(event)">
           <input 
             type="search" 
             name="q" 
@@ -100,10 +104,18 @@
             class="header-search-input" 
             placeholder="Search... (Ctrl+K)" 
             autocomplete="off"
-            aria-label="Quick search dispatches">
+            aria-label="Quick search dispatches"
+            oninput="handleHeaderSearchInput(this.value)"
+            onfocus="handleHeaderSearchFocus()"
+            onkeydown="handleHeaderSearchKeydown(event)">
+          <button type="button" id="header-search-clear-btn" class="header-search-clear" onclick="clearHeaderSearch(event)" title="Clear search" style="display:none;" aria-label="Clear search">
+            <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l10 10m0-10L3 13"/></svg>
+          </button>
           <svg class="header-search-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor">
             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
           </svg>
+          <!-- Live Autocomplete Results Dropdown -->
+          <div id="header-search-dropdown" class="header-search-dropdown" style="display:none;" role="listbox" aria-label="Search suggestions"></div>
         </form>
 
         <!-- Identity Strip -->
@@ -155,7 +167,7 @@
             <span>Browse Branches</span>
           </a>
 
-          <a href="/search" class="cmd-btn {% if request.path == '/search' %}cmd-btn-active{% endif %}" title="Search and find dispatches across all branches (Ctrl+K)">
+          <a href="/search" class="cmd-btn {% if request.path == '/search' %}cmd-btn-active{% endif %}" onclick="openGlobalSearchModal(event)" title="Dynamic Search across all branches (Ctrl+K)">
             <svg class="btn-icon-svg" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style="width:16px; height:16px; flex-shrink:0;">
               <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
             </svg>
@@ -171,7 +183,7 @@
             <span>RSS</span>
           </a>
 
-          <button type="button" id="theme-toggle-btn" class="cmd-btn cmd-btn-quiet" onclick="cycleKotonokiTheme()" title="Switch Reading Theme (Daylight / Lamp / CRT)" style="display:inline-flex; align-items:center; gap:5px;">
+          <button type="button" id="theme-toggle-btn" class="cmd-btn cmd-btn-quiet" onclick="cycleKotonokiTheme()" title="Switch Reading Theme (Daylight / Lamp)" style="display:inline-flex; align-items:center; gap:5px;">
             <span id="theme-toggle-icon" style="display:inline-flex; align-items:center;">
               <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
                 <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
@@ -224,7 +236,7 @@
 
       <div class="mobile-header-right">
         {% block mobile_header_right %}
-          <a href="/search" class="mobile-auth-link" style="margin-right: 8px; display: inline-flex; align-items: center;" title="Search">
+          <a href="/search" class="mobile-auth-link" onclick="openGlobalSearchModal(event)" style="margin-right: 8px; display: inline-flex; align-items: center;" title="Dynamic Search">
             <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor">
               <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
             </svg>
@@ -344,7 +356,7 @@
         <span class="mobile-nav-label">Write</span>
       </a>
 
-      <a href="/search" class="mobile-nav-item {% if request.path == '/search' %}active{% endif %}" title="Find / Search">
+      <a href="/search" class="mobile-nav-item {% if request.path == '/search' %}active{% endif %}" onclick="openGlobalSearchModal(event)" title="Find / Dynamic Search">
         <svg class="mobile-nav-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px; height:22px; flex-shrink:0;">
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -365,5 +377,80 @@
 
   <!-- Sticky Desk Modal Container -->
   <div id="sticky-modal-container" role="dialog" aria-modal="true" aria-label="Sticky Desk Memo"></div>
+
+  <!-- Global Dynamic Search Modal (Instant Command Palette / Spotlight) -->
+  <div id="global-search-modal" class="global-search-modal-backdrop" style="display:none;" onclick="handleModalBackdropClick(event)">
+    <div class="global-search-modal-window" role="dialog" aria-modal="true" aria-label="Dynamic Search">
+      <div class="global-search-modal-header">
+        <div class="modal-search-input-wrap">
+          <svg class="modal-search-icon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+          </svg>
+          <input 
+            type="search" 
+            id="modal-search-input" 
+            class="modal-search-input" 
+            placeholder="Search all writings, /branches, @authors..." 
+            autocomplete="off"
+            aria-label="Search query"
+            oninput="handleModalSearchInput(this.value)"
+            onkeydown="handleModalSearchKeydown(event)">
+          <button type="button" id="modal-search-clear-btn" class="modal-search-clear" onclick="clearModalSearch()" title="Clear input" style="display:none;" aria-label="Clear">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l10 10m0-10L3 13"/></svg>
+          </button>
+        </div>
+        <div class="modal-header-actions">
+          <a id="modal-full-search-link" href="/search" class="cmd-btn cmd-btn-quiet" title="Open as dedicated full page">
+            <span>Full Page</span>
+            <svg viewBox="0 0 16 16" width="11" height="11" fill="currentColor"><path d="M4.5 1h7a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0V2.707L4.854 8.854a.5.5 0 1 1-.708-.708L10.293 2H5.5a.5.5 0 0 1 0-1z"/></svg>
+          </a>
+          <button type="button" class="cmd-btn modal-close-btn" onclick="closeGlobalSearchModal()" title="Close search (Esc)" aria-label="Close">
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l10 10m0-10L3 13"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick branch filters & sort -->
+      <div class="modal-search-filter-bar">
+        <div class="modal-branch-chips" id="modal-branch-chips">
+          <button type="button" class="search-chip active" data-branch="" onclick="setModalBranch('')">All Branches</button>
+          {% for b in get_popular_branches()[:8] %}
+            <button type="button" class="search-chip" data-branch="{{ b.slug }}" onclick="setModalBranch('{{ b.slug }}')">/{{ b.slug }}</button>
+          {% endfor %}
+        </div>
+        <div class="modal-sort-select">
+          <label for="modal-sort-select-el" style="font-size:11px; color:var(--k-text-muted); margin-right:4px;">Sort:</label>
+          <select id="modal-sort-select-el" onchange="runModalSearch()" aria-label="Sort order">
+            <option value="relevance">Relevance</option>
+            <option value="newest">Newest</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Results Body -->
+      <div id="modal-search-body" class="modal-search-body search-results-host">
+        <div class="search-empty-prompt" style="text-align: center; padding: 40px 16px; color: var(--k-text-muted);">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--k-text-faint); margin-bottom: 10px;">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <div style="font-size: 14px; font-weight: 600; color: var(--k-text-main);">Type to search all public branches</div>
+          <div style="font-size: 12px; color: var(--k-text-muted); margin-top: 4px;">
+            Supports <code>/branch</code>, <code>@author</code>, and <code>"exact phrase"</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer keyboard navigation hints -->
+      <div class="modal-search-footer">
+        <div class="modal-search-shortcuts">
+          <span><kbd>Esc</kbd> Close</span>
+          <span><kbd>↑↓</kbd> Navigate</span>
+          <span><kbd>↵</kbd> Select</span>
+        </div>
+        <div id="modal-search-status" class="modal-search-status" style="font-size: 11px; color: var(--k-text-muted);"></div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

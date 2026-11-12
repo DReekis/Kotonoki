@@ -31,7 +31,7 @@
     {% if page > 1 or has_more %}
       <div class="search-pagination-bar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--k-border-subtle);">
         {% if page > 1 %}
-          <button type="button" class="cmd-btn" hx-get="/search?q={{ query | urlencode }}&page={{ page - 1 }}&sort={{ sort_by }}" hx-target="#search-results-area" hx-indicator="#search-loading-spinner">
+          <button type="button" class="cmd-btn" hx-get="/search?q={{ query | urlencode }}&page={{ page - 1 }}&sort={{ sort_by }}" hx-target="closest .search-results-container" hx-swap="outerHTML" hx-indicator="#search-loading-spinner">
             ← Previous
           </button>
         {% else %}
@@ -41,7 +41,7 @@
         <span style="font-size: 12px; color: var(--k-text-muted);">Page {{ page }}</span>
 
         {% if has_more %}
-          <button type="button" class="cmd-btn" hx-get="/search?q={{ query | urlencode }}&page={{ page + 1 }}&sort={{ sort_by }}" hx-target="#search-results-area" hx-indicator="#search-loading-spinner">
+          <button type="button" class="cmd-btn" hx-get="/search?q={{ query | urlencode }}&page={{ page + 1 }}&sort={{ sort_by }}" hx-target="closest .search-results-container" hx-swap="outerHTML" hx-indicator="#search-loading-spinner">
             Next →
           </button>
         {% else %}
@@ -71,8 +71,4 @@
       </svg>
       <div style="font-size: 15px; font-weight: 600; color: var(--k-text-main);">Search through all public branches</div>
       <div style="font-size: 13px; color: var(--k-text-muted); margin-top: 4px;">
-        Type keywords, filter by branch with <code>/cooking</code>, or filter by author with <code>@handle</code>
-      </div>
-    </div>
-  {% endif %}
-</div>
+        Type keywords, fil

@@ -39,12 +39,19 @@ def create_app(config_class=Config):
     # Template context processors
     @app.context_processor
     def inject_global_vars():
+        from app.services.branch_service import BranchService
+        def _get_popular_branches():
+            try:
+                return BranchService.get_popular_branches(limit=10)
+            except Exception:
+                return []
         return {
             "csrf_token": get_csrf_token,
             "csrf_field": csrf_field,
             "current_user": get_current_pen_name(),
             "now_utc": datetime.now(timezone.utc),
-            "asset_version": "3.0"
+            "asset_version": "3.1",
+            "get_popular_branches": _get_popular_branches
         }
 
     # Template filters

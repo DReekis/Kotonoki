@@ -62,6 +62,42 @@ def branches_list():
         active_nav="branches"
     )
 
+@feed_bp.route("/api/quick-search", methods=["GET"])
+def quick_search():
+    raw_query = request.args.get("q", "").strip()
+    branch_filter = request.args.get("branch", "").strip() or None
+    if not raw_query:
+        return {"query": "", "results": [], "total": 0, "has_more": False}
+
+    search_data = SearchService.search(
+        raw_query=raw_query,
+        filter_branch=branch_filter,
+        sort_by="relevance",
+        page=1,
+        page_size=8
+    )
+
+    results = []
+    for d in search_data["dispatches"]:
+        results.append({
+            "id": d.id,
+            "title": d.title,
+            "branch": d.branch.slug if d.branch else "",
+            "author": d.author.handle if d.author else "anonymous",
+            "published_at": d.published_at.strftime("%b %d, %Y") if d.published_at else "",
+            "excerpt": getattr(d, "search_excerpt", ""),
+            "url": f"/{d.branch.slug}/{d.id}" if d.branch else f"/dispatch/{d.id}",
+            "has_image": bool(d.image_path)
+        })
+
+    return {
+        "query": raw_query,
+        "parsed": search_data["parsed"],
+        "total": len(results),
+        "has_more": search_data["has_more"],
+        "results": results
+    }
+
 @feed_bp.route("/search", methods=["GET"])
 def search():
     raw_query = request.args.get("q", "").strip()
@@ -81,7 +117,7 @@ def search():
         page_size=20
     )
 
-    if request.headers.get("HX-Request"):
+    if request.headers.get("HX-Request") or request.args.get("partial") == "true":
         return render_template(
             "partials/search_results.html",
             query=raw_query,

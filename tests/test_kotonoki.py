@@ -1,4 +1,5 @@
 import io
+from pathlib import Path
 import pytest
 from PIL import Image
 from app import create_app
@@ -568,8 +569,8 @@ def test_theme_system_css_tokens():
 
     # Verify lamp theme definition
     assert '[data-theme="lamp"]' in content
-    # Verify amber theme definition
-    assert '[data-theme="amber"]' in content
+    # Verify amber theme is removed
+    assert '[data-theme="amber"]' not in content
 
     # Verify explorer.css consumes var(--k-canvas-gradient) on body
     explorer_path = Path("app/static/css/explorer.css")
@@ -577,6 +578,56 @@ def test_theme_system_css_tokens():
     assert "background-image: var(--k-canvas-gradient);" in explorer_content
     assert "background: var(--k-header-bg);" in explorer_content
     assert "background: var(--k-command-bg);" in explorer_content
+
+def test_dynamic_search_api_and_modal_integration(app, client, test_user):
+    """Verify that dynamic quick search API works and base template embeds dynamic search modal & dropdown."""
+    with app.app_context():
+        branch, _ = BranchService.get_or_create("tea")
+        d = Dispatch(
+            branch_id=branch.id,
+            author_id=test_user.id,
+            title="Japanese Gyokuro Steeping",
+            content_html="<p>Steeping delicate shade-grown green tea leaves.</p>"
+        )
+        db.session.add(d)
+        db.session.commit()
+
+    # 1. Test /api/quick-search returns valid JSON without page navigation
+    res_api = client.get("/api/quick-search?q=Gyokuro")
+    assert res_api.status_code == 200
+    assert res_api.is_json
+    data = res_api.get_json()
+    assert data["total"] >= 1
+    assert any("Gyokuro" in item["title"] for item in data["results"])
+
+    # 2. Test base.html has the dynamic modal and autocomplete dropdown elements
+    res_home = client.get("/")
+    assert res_home.status_code == 200
+    home_html = res_home.data.decode("utf-8")
+    assert 'id="header-search-dropdown"' in home_html
+    assert 'id="global-search-modal"' in home_html
+    assert 'id="modal-search-input"' in home_html
+    assert 'onclick="openGlobalSearchModal(event)"' in home_html
+
+    # 3. Test /search page uses onsubmit handler to prevent full page refresh
+    res_search = client.get("/search")
+    assert res_search.status_code == 200
+    search_html = res_search.data.decode("utf-8")
+    assert 'onsubmit="handleSearchPageSubmit(event)"' in search_html
+    assert 'id="search-results-area"' in search_html
+
+def test_amber_theme_completely_removed():
+    """Verify Amber CRT theme has been completely eliminated across all stylesheets, scripts, and templates."""
+    tokens_path = Path("app/static/css/tokens.css")
+    explorer_path = Path("app/static/css/explorer.css")
+    js_path = Path("app/static/js/app.js")
+    base_path = Path("app/templates/base.html")
+
+    assert '[data-theme="amber"]' not in tokens_path.read_text(encoding="utf-8")
+    assert '[data-theme="amber"]' not in explorer_path.read_text(encoding="utf-8")
+    assert "'amber'" not in js_path.read_text(encoding="utf-8")
+    assert "Amber CRT" not in base_path.read_text(encoding="utf-8")
+
 
 
 

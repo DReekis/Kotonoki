@@ -20,7 +20,7 @@
   <div class="search-view-container" style="max-width: 760px; margin: 0 auto; width: 100%;">
     <!-- Search Query Bar Card -->
     <div class="dispatch-card search-bar-card" style="padding: 18px 20px; margin-bottom: 20px;">
-      <form action="/search" method="GET" class="search-form" id="search-form">
+      <form action="/search" method="GET" class="search-form" id="search-form" onsubmit="handleSearchPageSubmit(event)">
         <div class="search-input-wrapper" style="position: relative; display: flex; gap: 8px; align-items: center;">
           <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style="color: var(--k-text-muted); flex-shrink: 0;">
             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
@@ -98,12 +98,28 @@
     </div>
 
     <!-- Live Results Target Area -->
-    <div id="search-results-area">
+    <div id="search-results-area" class="search-results-host">
       {% include "partials/search_results.html" %}
     </div>
   </div>
 
   <script>
+    function handleSearchPageSubmit(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('search-input');
+      if (input) {
+        htmx.trigger(input, 'search');
+        syncSearchUrl(input.value.trim());
+      }
+    }
+
+    function syncSearchUrl(query) {
+      if (history.replaceState) {
+        const url = query ? ('/search?q=' + encodeURIComponent(query)) : '/search';
+        history.replaceState(null, '', url);
+      }
+    }
+
     function clearSearchInput() {
       const input = document.getElementById('search-input');
       const clearBtn = document.getElementById('search-clear-btn');
@@ -112,6 +128,7 @@
         input.focus();
         if (clearBtn) clearBtn.style.display = 'none';
         htmx.trigger(input, 'search');
+        syncSearchUrl('');
       }
     }
 
@@ -126,6 +143,7 @@
       }
       input.value = val.trim();
       htmx.trigger(input, 'search');
+      syncSearchUrl(input.value.trim());
       updateChipActive(slug);
     }
 
@@ -150,13 +168,4 @@
       }
     }
 
-    // Toggle clear button on input
-    const sInput = document.getElementById('search-input');
-    const sClear = document.getElementById('search-clear-btn');
-    if (sInput && sClear) {
-      sInput.addEventListener('input', () => {
-        sClear.style.display = sInput.value.trim() ? 'block' : 'none';
-      });
-    }
-  </script>
-{% endblock %}
+    // Toggle clear button and
