@@ -168,4 +168,14 @@
       }
     }
 
-    // Toggle clear button and
+    // Toggle clear button and sync URL on input
+    const sInput = document.getElementById('search-input');
+    const sClear = document.getElementById('search-clear-btn');
+    if (sInput) {
+      sInput.addEventListener('input', () => {
+        if (sClear) sClear.style.display = sInput.value.trim() ? 'block' : 'none';
+        syncSearchUrl(sInput.value.trim());
+      });
+    }
+  </script>
+{% endblock %}

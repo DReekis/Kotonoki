@@ -341,4 +341,17 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       // Check initial hash (e.g. #clipped or #security)
-      const hash = window.location.hash.replace('#
+      const hash = window.location.hash.replace('#', '');
+      if (hash === 'clipped' || hash === 'security') {
+        switchDeskTab(hash);
+      }
+
+      // Initialize badge count
+      try {
+        const memos = JSON.parse(localStorage.getItem('kotonoki_clipped_memos') || '[]');
+        const badge = document.getElementById('clipped-count-badge');
+        if (badge) badge.textContent = memos.length;
+      } catch (e) {}
+    });
+  </script>
+{% endblock %}
