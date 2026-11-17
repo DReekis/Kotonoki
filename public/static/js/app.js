@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (draftData.title.trim() || draftData.content.trim()) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(draftData));
           }
-        } catch (e) {}
+        } catch (e) { }
       }, 500);
     }
 
@@ -113,12 +113,12 @@ document.addEventListener('DOMContentLoaded', () => {
     writeForm.addEventListener('submit', () => {
       try {
         localStorage.removeItem(STORAGE_KEY);
-      } catch (e) {}
+      } catch (e) { }
     });
   }
 
   // 4. Sticky Desk Modal & Dragging Logic
-  window.openStickyModal = function(url) {
+  window.openStickyModal = function (url) {
     const container = document.getElementById('sticky-modal-container');
     if (!container) return;
 
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .catch(err => console.error('Failed to load sticky note:', err));
   };
 
-  window.closeStickyModal = function() {
+  window.closeStickyModal = function () {
     const container = document.getElementById('sticky-modal-container');
     if (!container) return;
     container.classList.remove('active');
@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
         header.style.cursor = 'grab';
         try {
           header.releasePointerCapture(e.pointerId);
-        } catch (err) {}
+        } catch (err) { }
       }
     }
 
@@ -227,12 +227,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // 7. Register Service Worker for PWA
   if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
+      navigator.serviceWorker.register('/sw.js').catch(() => { });
     });
   }
 
   // 8. Clipped Memos (Private Local Reading Binder)
-  window.toggleClipMemo = function(btn) {
+  window.toggleClipMemo = function (btn) {
     if (!btn) return;
     const id = btn.getAttribute('data-dispatch-id');
     const title = btn.getAttribute('data-dispatch-title') || 'Untitled';
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.updateAllClipButtons = function() {
+  window.updateAllClipButtons = function () {
     try {
       const memos = JSON.parse(localStorage.getItem('kotonoki_clipped_memos') || '[]');
       const clipIds = new Set(memos.map(m => m.id));
@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const badge = document.getElementById('clipped-count-badge');
       if (badge) badge.textContent = memos.length;
-    } catch (e) {}
+    } catch (e) { }
   };
 
   window.updateAllClipButtons();
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'lamp': 'Lamp'
   };
 
-  window.cycleKotonokiTheme = function() {
+  window.cycleKotonokiTheme = function () {
     try {
       let current = localStorage.getItem('kotonoki_theme') || 'default';
       if (!THEMES.includes(current)) current = 'default';
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       applyThemeLabels(nextTheme);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   function applyThemeLabels(theme) {
@@ -339,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       localStorage.removeItem('kotonoki_theme');
       document.documentElement.removeAttribute('data-theme');
-    } catch (e) {}
+    } catch (e) { }
   }
   applyThemeLabels(activeTheme);
 
@@ -392,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gain.connect(this.ctx.destination);
 
         noise.start();
-      } catch (e) {}
+      } catch (e) { }
     }
 
     playEnter() {
@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         osc.start();
         osc.stop(this.ctx.currentTime + 0.16);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     toggle() {
@@ -450,10 +450,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('keydown', (e) => {
     // Check if target is inside editor, input, or textarea
     const isEditing = e.target.closest('#tiptap-editor') ||
-                      e.target.closest('#dispatch-title-input') ||
-                      e.target.closest('#dispatch-branch-input') ||
-                      e.target.tagName === 'INPUT' ||
-                      e.target.tagName === 'TEXTAREA';
+      e.target.closest('#dispatch-title-input') ||
+      e.target.closest('#dispatch-branch-input') ||
+      e.target.tagName === 'INPUT' ||
+      e.target.tagName === 'TEXTAREA';
 
     if (isEditing && typewriter.enabled) {
       if (e.key === 'Enter') {
@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let headerSearchResults = [];
   let headerSearchSelectedIndex = -1;
 
-  window.handleHeaderSearchInput = function(val) {
+  window.handleHeaderSearchInput = function (val) {
     const clearBtn = document.getElementById('header-search-clear-btn');
     const dropdown = document.getElementById('header-search-dropdown');
     if (!dropdown) return;
@@ -597,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
 
-  window.setHeaderSearchSelected = function(idx) {
+  window.setHeaderSearchSelected = function (idx) {
     headerSearchSelectedIndex = idx;
     const dropdown = document.getElementById('header-search-dropdown');
     if (!dropdown) return;
@@ -607,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  window.handleHeaderSearchFocus = function() {
+  window.handleHeaderSearchFocus = function () {
     const input = document.getElementById('global-header-search-input');
     const dropdown = document.getElementById('header-search-dropdown');
     if (input && input.value.trim() && dropdown && headerSearchResults.length) {
@@ -615,7 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.handleHeaderSearchKeydown = function(e) {
+  window.handleHeaderSearchKeydown = function (e) {
     const dropdown = document.getElementById('header-search-dropdown');
     const isOpen = dropdown && dropdown.style.display !== 'none';
 
@@ -656,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.clearHeaderSearch = function(e) {
+  window.clearHeaderSearch = function (e) {
     if (e) e.stopPropagation();
     const input = document.getElementById('global-header-search-input');
     const clearBtn = document.getElementById('header-search-clear-btn');
@@ -671,7 +671,7 @@ document.addEventListener('DOMContentLoaded', () => {
     headerSearchSelectedIndex = -1;
   };
 
-  window.handleHeaderSearchSubmit = function(e) {
+  window.handleHeaderSearchSubmit = function (e) {
     if (e) e.preventDefault();
     const input = document.getElementById('global-header-search-input');
     const q = input ? input.value.trim() : '';
@@ -694,7 +694,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let modalSearchAbortCtrl = null;
   let currentModalBranch = '';
 
-  window.openGlobalSearchModal = function(e, initialQuery) {
+  window.openGlobalSearchModal = function (e, initialQuery) {
     if (e && typeof e.preventDefault === 'function') {
       e.preventDefault();
     }
@@ -732,7 +732,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.closeGlobalSearchModal = function() {
+  window.closeGlobalSearchModal = function () {
     const modal = document.getElementById('global-search-modal');
     if (modal) {
       modal.style.display = 'none';
@@ -740,13 +740,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.handleModalBackdropClick = function(e) {
+  window.handleModalBackdropClick = function (e) {
     if (e.target && e.target.id === 'global-search-modal') {
       closeGlobalSearchModal();
     }
   };
 
-  window.handleModalSearchInput = function(val) {
+  window.handleModalSearchInput = function (val) {
     const clearBtn = document.getElementById('modal-search-clear-btn');
     if (clearBtn) clearBtn.style.display = (val || '').trim() ? 'inline-flex' : 'none';
 
@@ -756,13 +756,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 200);
   };
 
-  window.handleModalSearchKeydown = function(e) {
+  window.handleModalSearchKeydown = function (e) {
     if (e.key === 'Escape') {
       closeGlobalSearchModal();
     }
   };
 
-  window.clearModalSearch = function() {
+  window.clearModalSearch = function () {
     const input = document.getElementById('modal-search-input');
     const clearBtn = document.getElementById('modal-search-clear-btn');
     if (input) {
@@ -773,7 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
     runModalSearch();
   };
 
-  window.setModalBranch = function(slug) {
+  window.setModalBranch = function (slug) {
     currentModalBranch = slug || '';
     const container = document.getElementById('modal-branch-chips');
     if (container) {
@@ -785,7 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
     runModalSearch();
   };
 
-  window.runModalSearch = function() {
+  window.runModalSearch = function () {
     const input = document.getElementById('modal-search-input');
     const body = document.getElementById('modal-search-body');
     const status = document.getElementById('modal-search-status');
@@ -870,5 +870,5 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
-  });
+});
 });
